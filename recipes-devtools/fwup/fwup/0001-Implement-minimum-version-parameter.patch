@@ -1,0 +1,247 @@
+From d56b4192f187649bf16571a8a5be6ce0e97ef021 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 21 Jan 2019 17:09:45 +0800
+Subject: [PATCH] Implement --minimum-version parameter
+
+---
+ README.md        |  6 ++++++
+ src/fwup.c       | 19 +++++++++++++++++++
+ src/fwup_apply.c | 28 ++++++++++++++++++++++++++++
+ src/fwup_apply.h |  3 ++-
+ src/util.c       | 24 ++++++++++++++++++++++++
+ src/util.h       | 16 ++++++++++++++++
+ 6 files changed, 95 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index bea7291..9425204 100644
+--- a/README.md
++++ b/README.md
+@@ -132,6 +132,7 @@ Options:
+   -i <input.fw> Specify the input firmware update file (Use - for stdin)
+   -l, --list   List the available tasks in a firmware update
+   -m, --metadata   Print metadata in the firmware update
++  --minimum-version <version> The minimum firmware version that will be accepted
+   -n   Report numeric progress
+   -o <output.fw> Specify the output file when creating an update (Use - for stdout)
+   -p, --public-key-file <keyfile> A public key file for verifying firmware updates
+@@ -171,6 +172,11 @@ Apply the firmware update to /dev/sdc and specify the 'upgrade' task:
+ 
+   $ fwup -a -d /dev/sdc -i myfirmware.fw -t upgrade
+ 
++Apply the firmware update to /dev/sdc, specify the 'upgrade' task, reject the
++update if the file's meta-version is not at least 2.0.0.1:
++
++  $ fwup -a -d /dev/sdc -i myfirmware.fw -t upgrade --minimum-version 2.0.0.1
++
+ Create an image file from a .fw file for use with dd(1):
+ 
+   $ fwup -a -d myimage.img -i myfirmware.fw -t complete
+diff --git a/src/fwup.c b/src/fwup.c
+index b5c8006..94d4192 100644
+--- a/src/fwup.c
++++ b/src/fwup.c
+@@ -92,6 +92,7 @@ static void print_usage()
+     printf("  -i <input.fw> Specify the input firmware update file (Use - for stdin)\n");
+     printf("  -l, --list   List the available tasks in a firmware update\n");
+     printf("  -m, --metadata   Print metadata in the firmware update\n");
++    printf("  --minimum-version <version> The minimum firmware version that will be accepted\n");
+     printf("  -n   Report numeric progress\n");
+     printf("  -o <output.fw> Specify the output file when creating an update (Use - for stdout)\n");
+     printf("  -p, --public-key-file <keyfile> A public key file for verifying firmware updates (can specify multiple times)\n");
+@@ -135,6 +136,11 @@ static void print_usage()
+     printf("\n");
+     printf("  $ %s -a -d %s -i myfirmware.fw -t upgrade\n", program_name, example_sd);
+     printf("\n");
++    printf("Apply the firmware update to %s, specify the 'upgrade' task, reject the\n", example_sd);
++    printf("update if the file's meta-version is not at least 2.0.0.1:\n");
++    printf("\n");
++    printf("  $ %s -a -d %s -i myfirmware.fw -t upgrade --minimum-version 2.0.0.1\n", program_name, example_sd);
++    printf("\n");
+     printf("Create an image file from a .fw file for use with dd(1):\n");
+     printf("\n");
+     printf("  $ %s -a -d myimage.img -i myfirmware.fw -t complete\n", program_name);
+@@ -170,6 +176,7 @@ static struct option long_options[] = {
+     {"help",     no_argument,       0, 'h'},
+     {"list",     no_argument,       0, 'l'},
+     {"metadata", no_argument,       0, 'm'},
++    {"minimum-version", required_argument, 0, 'Z'},
+     {"private-key", required_argument, 0, '('},
+     {"private-key-file", required_argument, 0, 's'},
+     {"public-key", required_argument, 0, ')'},
+@@ -348,6 +355,8 @@ int main(int argc, char **argv)
+     const char *output_filename = NULL;
+     const char *task = NULL;
+     const char *sparse_check = NULL;
++    const char *minimum_version_string = NULL;
++    struct version_t minimum_version;
+     int sparse_check_size = 4096; // Arbitrary default.
+     bool accept_found_device = false;
+     unsigned char *signing_key = NULL;
+@@ -477,6 +486,9 @@ int main(int argc, char **argv)
+         case 'z':
+             print_selected_device();
+             fwup_exit(EXIT_SUCCESS);
++        case 'Z': // --minimum-version
++            minimum_version_string = optarg;
++            break;
+         case '!': // --enable-trim
+             enable_trim = true;
+             break;
+@@ -575,6 +587,12 @@ int main(int argc, char **argv)
+         if (!mmc_device_path)
+             mmc_device_path = autoselect_and_confirm_mmc_device(accept_found_device, input_filename);
+ 
++        if (!minimum_version_string)
++            minimum_version_string = "0.0.0.0";
++
++        if (string_to_version(minimum_version_string, &minimum_version) < 0)
++            fwup_errx(EXIT_FAILURE, "illegal version number format (--minimum-version)");
++
+         if (quiet)
+             fwup_progress_mode = PROGRESS_MODE_OFF;
+         else if (fwup_framing)
+@@ -645,6 +663,7 @@ int main(int argc, char **argv)
+                        output_fd,
+                        &progress,
+                        public_keys,
++                       &minimum_version,
+                        enable_trim) < 0) {
+             if (!quiet)
+                 fprintf(stderr, "\n");
+diff --git a/src/fwup_apply.c b/src/fwup_apply.c
+index f28c6d1..4a81073 100644
+--- a/src/fwup_apply.c
++++ b/src/fwup_apply.c
+@@ -245,6 +245,16 @@ static void initialize_timestamps()
+     fatfs_set_time(&tmp);
+ }
+ 
++static int get_minimum_version_from_cfg(cfg_t *cfg, struct version_t *file_version)
++{
++    const char *file_version_string = cfg_getstr(cfg, "meta-version");
++
++    if (!file_version_string)
++        return -ENOENT;
++
++    return string_to_version(file_version_string, file_version);
++}
++
+ static int compute_progress(struct fun_context *fctx)
+ {
+     fctx->type = FUN_CONTEXT_INIT;
+@@ -367,10 +377,12 @@ int fwup_apply(const char *fw_filename,
+                int output_fd,
+                struct fwup_progress *progress,
+                unsigned char *const*public_keys,
++               const struct version_t *minimum_version,
+                bool enable_trim)
+ {
+     int rc = 0;
+     unsigned char *meta_conf_signature = NULL;
++    struct version_t file_version;
+     struct fun_context fctx;
+     memset(&fctx, 0, sizeof(fctx));
+     fctx.progress = progress;
+@@ -415,6 +427,22 @@ int fwup_apply(const char *fw_filename,
+ 
+     initialize_timestamps();
+ 
++    if (get_minimum_version_from_cfg(fctx.cfg, &file_version) == 0) {
++        bool accept_file = version_cmp(&file_version, minimum_version) >= 0;
++        if (!accept_file) {
++            fwup_errx(EXIT_FAILURE, "Firmware version is %d.%d.%d.%d is too old, minimum required is %d.%d.%d.%d",
++                file_version.major, file_version.minor, file_version.patch, file_version.build,
++                minimum_version->major, minimum_version->minor, minimum_version->patch, minimum_version->build
++            );
++            goto cleanup;
++        }
++
++        fwup_warnx("Firmware version is %d.%d.%d.%d, minimum required is %d.%d.%d.%d",
++            file_version.major, file_version.minor, file_version.patch, file_version.build,
++            minimum_version->major, minimum_version->minor, minimum_version->patch, minimum_version->build
++        );
++    }
++
+     // Initialize the output. Nothing should have been written before now
+     // and waiting to initialize the output until now forces the point.
+     fctx.output = (struct block_cache *) malloc(sizeof(struct block_cache));
+diff --git a/src/fwup_apply.h b/src/fwup_apply.h
+index 9c0ea34..04b3dad 100644
+--- a/src/fwup_apply.h
++++ b/src/fwup_apply.h
+@@ -18,9 +18,10 @@
+ #define FWUP_APPLY_H
+ 
+ #include "functions.h"
++#include "util.h"
+ 
+ struct fwup_progress;
+ 
+-int fwup_apply(const char *fw_filename, const char *task, int output_fd, struct fwup_progress *progress, unsigned char *const* public_keys, bool enable_trim);
++int fwup_apply(const char *fw_filename, const char *task, int output_fd, struct fwup_progress *progress, unsigned char *const* public_keys, const struct version_t *minimum_version, bool enable_trim);
+ 
+ #endif // FWUP_APPLY_H
+diff --git a/src/util.c b/src/util.c
+index 7100c8d..60bdcba 100644
+--- a/src/util.c
++++ b/src/util.c
+@@ -26,6 +26,7 @@
+ #include <string.h>
+ #include <time.h>
+ #include <unistd.h>
++#include <endian.h>
+ 
+ #include <sys/stat.h>
+ 
+@@ -587,3 +588,26 @@ int update_relative_path(const char *fromfile, const char *filename, char **newp
+     }
+     return 0;
+ }
++
++int string_to_version(const char *s, struct version_t *v)
++{
++    return (sscanf(s, "%d.%d.%d.%d", &v->major, &v->minor, &v->patch, &v->build) == 4) ? 0 : -EINVAL;
++}
++
++int version_cmp(const struct version_t *v1, const struct version_t *v2)
++{
++    struct version_t lhs;
++    struct version_t rhs;
++
++    lhs.major = htobe32(v1->major);
++    lhs.minor = htobe32(v1->minor);
++    lhs.patch = htobe32(v1->patch);
++    lhs.build = htobe32(v1->build);
++
++    rhs.major = htobe32(v2->major);
++    rhs.minor = htobe32(v2->minor);
++    rhs.patch = htobe32(v2->patch);
++    rhs.build = htobe32(v2->build);
++
++    return memcmp(&lhs, &rhs, sizeof(struct version_t));
++}
+diff --git a/src/util.h b/src/util.h
+index af8fcf9..aaeefad 100644
+--- a/src/util.h
++++ b/src/util.h
+@@ -186,4 +186,20 @@ void free_page_aligned(void *memptr);
+ 
+ int update_relative_path(const char *from_file, const char *filename, char **newpath);
+ 
++// A firmware version number
++struct version_t {
++    unsigned int major;
++    unsigned int minor;
++    unsigned int patch;
++    unsigned int build;
++};
++
++int string_to_version(const char *s, struct version_t *v);
++
++// Compares v1 against v2.
++// Returns a value > 0 if v1 is greater than v2.
++// Returns a value < 0 if v1 is less than v2.
++// Returns 0 if the two versions are equal.
++int version_cmp(const struct version_t *v1, const struct version_t *v2);
++
+ #endif // UTIL_H

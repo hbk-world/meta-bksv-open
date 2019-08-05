@@ -1,0 +1,22 @@
+From a6c2738a061ce0af5a0547309777361d71336e0a Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Mon, 25 Mar 2019 12:55:51 +0100
+Subject: [PATCH] Remove battery profiles remote read
+
+---
+ profiles/battery/battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/profiles/battery/battery.c b/profiles/battery/battery.c
+index 4da4355a1..004595040 100644
+--- a/profiles/battery/battery.c
++++ b/profiles/battery/battery.c
+@@ -307,7 +307,7 @@ static int batt_accept(struct btd_service *service)
+ 	struct batt *batt = btd_service_get_user_data(service);
+ 	char addr[18];
+ 	bt_uuid_t batt_uuid;
+-
++	return -1;
+ 	ba2str(device_get_address(device), addr);
+ 	DBG("BATT profile accept (%s)", addr);
+ 

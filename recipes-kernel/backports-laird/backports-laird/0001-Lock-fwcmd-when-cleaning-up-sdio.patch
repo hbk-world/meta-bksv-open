@@ -1,0 +1,30 @@
+From 333bc410a1e4face167416b95f722b35c77ad33e Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Mon, 4 Feb 2019 14:16:52 +0100
+Subject: [PATCH] Lock fwcmd when cleaning up sdio
+
+---
+ drivers/net/wireless/laird/lrdmwl/sdio.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/laird/lrdmwl/sdio.c b/drivers/net/wireless/laird/lrdmwl/sdio.c
+index 77ba421..8cc6db8 100644
+--- a/drivers/net/wireless/laird/lrdmwl/sdio.c
++++ b/drivers/net/wireless/laird/lrdmwl/sdio.c
+@@ -658,7 +658,7 @@ static void mwl_sdio_cleanup(struct mwl_priv *priv)
+ {
+ 	int num;
+ 	struct mwl_sdio_card *card = priv->intf;
+-
++	mutex_lock(&priv->fwcmd_mutex);
+ 	/* Disable Interrupt before tx/rx cleanup */
+ 	sdio_claim_host(card->func);
+ 	sdio_release_irq(card->func);
+@@ -686,6 +686,7 @@ static void mwl_sdio_cleanup(struct mwl_priv *priv)
+ 	sdio_claim_host(card->func);
+ 	sdio_disable_func(card->func);
+ 	sdio_release_host(card->func);
++	mutex_unlock(&priv->fwcmd_mutex);
+ }
+ 
+ static bool mwl_sdio_check_card_status(struct mwl_priv *priv)

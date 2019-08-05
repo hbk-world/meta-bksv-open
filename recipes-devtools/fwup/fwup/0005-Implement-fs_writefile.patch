@@ -1,0 +1,159 @@
+From 05bd200634a3b7ab19fadfef4b582c4cd7a1d1ef Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 21 Jan 2019 18:08:35 +0800
+Subject: [PATCH] Implement fs_writefile
+
+---
+ README.md       |   1 +
+ src/cfgfile.c   |   3 +-
+ src/functions.c | 100 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 103 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index e13f68b..2d042e6 100644
+--- a/README.md
++++ b/README.md
+@@ -569,6 +569,7 @@ uboot_unsetenv(my_uboot_env, name)      | 0.10.0 | Unset the specified U-boot va
+ mmc_setbootpart(partition)              | 0.17.0 | Mark the specified eMMC boot partition as active in the extcsd record. The `partition` number must be 1 or 2
+ mmc_writebootpart(partition, offset)    | 0.17.0 | Write a resource to the specified eMMC boot partition. The `offset` is specified as a number of 512-byte blocks, and the `partition` number must be 1 or 2. The boot partition will be left write-protected
+ fs_mkvfat(partition, options)           | 0.17.0 | Create a vfat filesystem on the specified `partition`. The `options` parameter is passed to the underlying mkfs.vfat command and may be an empty string. The new partition will be left unmounted
++fs_writefile(partition, path)           | 0.17.0 | Write a resource to a path on the specified `partition`. The partition will be automatically mounted before extraction, and unmounted afterwards
+ 
+ ## Sparse files
+ 
+diff --git a/src/cfgfile.c b/src/cfgfile.c
+index 867c676..e448f88 100644
+--- a/src/cfgfile.c
++++ b/src/cfgfile.c
+@@ -497,7 +497,8 @@ static cfg_opt_t uboot_environment_opts[] = {
+     CFG_FUNC("execute", CB), \
+     CFG_FUNC("mmc_writebootpart", CB), \
+     CFG_FUNC("mmc_setbootpart", CB), \
+-    CFG_FUNC("fs_mkvfat", CB)
++    CFG_FUNC("fs_mkvfat", CB), \
++    CFG_FUNC("fs_writefile", CB)
+ 
+ static cfg_opt_t task_on_init_opts[] = {
+     CFG_ON_EVENT_FUNCTIONS(cb_on_init_func),
+diff --git a/src/functions.c b/src/functions.c
+index 4de6795..2ffd623 100644
+--- a/src/functions.c
++++ b/src/functions.c
+@@ -67,6 +67,7 @@ DECLARE_FUN(execute);
+ DECLARE_FUN(mmc_writebootpart);
+ DECLARE_FUN(mmc_setbootpart);
+ DECLARE_FUN(fs_mkvfat);
++DECLARE_FUN(fs_writefile);
+ 
+ struct fun_info {
+     const char *name;
+@@ -105,6 +106,7 @@ static struct fun_info fun_table[] = {
+     FUN_INFO(mmc_writebootpart),
+     FUN_INFO(mmc_setbootpart),
+     FUN_INFO(fs_mkvfat),
++    FUN_INFO(fs_writefile),
+ };
+ 
+ static struct fun_info *lookup(int argc, const char **argv)
+@@ -1353,3 +1355,101 @@ int fs_mkvfat_run(struct fun_context *fctx)
+     progress_report(fctx->progress, FWUP_BLOCK_SIZE);
+     return 0;
+ }
++
++int fs_writefile_validate(struct fun_context *fctx)
++{
++    if (fctx->type != FUN_CONTEXT_FILE)
++        ERR_RETURN("fs_writefile only usable in on-resource");
++
++    if (fctx->argc != 3)
++        ERR_RETURN("fs_writefile requires a partition number and a file path");
++
++    CHECK_ARG_UINT64(fctx->argv[1], "fs_writefile requires a non-negative partition number");
++
++    return 0;
++}
++int fs_writefile_compute_progress(struct fun_context *fctx)
++{
++    return process_resource_compute_progress(fctx, false);
++}
++struct fs_writefile_context {
++    const char *output_filename;
++    FILE *fp;
++};
++static int fs_writefile_pwrite_callback(void *context, const void *buf, size_t count, off_t offset)
++{
++    struct fs_writefile_context *fwc = (struct fs_writefile_context *) context;
++
++    OK_OR_RETURN_MSG(fseek(fwc->fp, (long) offset, SEEK_SET), "seek to offset %ld failed on '%s'", (long) offset, fwc->output_filename);
++
++    size_t written = fwrite(buf, 1, count, fwc->fp);
++    if (written != count)
++        ERR_RETURN("fs_writefile failed to write '%s'", fwc->output_filename);
++    return 0;
++}
++static int fs_writefile_final_hole_callback(void *context, off_t hole_size, off_t file_size)
++{
++    (void) hole_size;
++
++    // Write a zero at the last offset to force the file to expand to the proper size
++    char zero = 0;
++    return fs_writefile_pwrite_callback(context, &zero, 1, file_size - 1);
++}
++int fs_writefile_run(struct fun_context *fctx)
++{
++    int partition = strtoull(fctx->argv[1], NULL, 0);
++    const char *device_name = strrchr(fctx->mmc_device_path, '/') + 1;
++
++    // Create directory in /mnt
++    char cmd_mkdir[64];
++    snprintf(cmd_mkdir, sizeof(cmd_mkdir), "mkdir -p /mnt/%sp%d", device_name, partition);
++
++    int status = system(cmd_mkdir);
++    if (status < 0)
++        ERR_RETURN("fs_writefile couldn't run '%s'", cmd_mkdir);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd_mkdir, status);
++
++    // Mount target filesystem
++    char cmd_mount[64];
++    snprintf(cmd_mount, sizeof(cmd_mount), "mount %sp%d /mnt/%sp%d",
++        fctx->mmc_device_path, partition, device_name, partition);
++
++    status = system(cmd_mount);
++    if (status < 0)
++        ERR_RETURN("fs_writefile couldn't run '%s'", cmd_mount);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd_mount, status);
++
++    char output_filename[32 + strlen(device_name) + strlen(fctx->argv[2])];
++    snprintf(output_filename, sizeof(output_filename), "/mnt/%sp%d/%s",
++        device_name, partition, fctx->argv[2]);
++
++    struct fs_writefile_context pwc;
++    pwc.output_filename = output_filename;
++    pwc.fp = fopen(pwc.output_filename, "wb");
++    if (pwc.fp == NULL)
++        ERR_RETURN("fs_writefile can't open '%s'", pwc.output_filename);
++
++    int rc = 0;
++    OK_OR_CLEANUP(process_resource(fctx,
++                            false,
++                            fs_writefile_pwrite_callback,
++                            fs_writefile_final_hole_callback,
++                            &pwc));
++
++cleanup:
++    fclose(pwc.fp);
++
++    // Unmount target filesystem
++    char cmd_umount[64];
++    snprintf(cmd_umount, sizeof(cmd_umount), "umount /mnt/%sp%d", device_name, partition);
++
++    status = system(cmd_umount);
++    if (status < 0)
++        ERR_RETURN("fs_writefile couldn't run '%s'", cmd_umount);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd_umount, status);
++
++    return rc;
++}

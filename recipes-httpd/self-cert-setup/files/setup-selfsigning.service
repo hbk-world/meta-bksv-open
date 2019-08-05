@@ -1,0 +1,14 @@
+[Unit]
+Description=Create self-signed certificates for nginx
+ConditionPathExists=|!/etc/ssl/private/self-signed.key
+Wants=network-pre.target
+Before=network-pre.target
+Before=nginx.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/create-self-certs.sh /usr/share/certs/self-cert.conf
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

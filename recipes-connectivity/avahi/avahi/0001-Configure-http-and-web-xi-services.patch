@@ -1,0 +1,61 @@
+From 8864c205aa009f45d1adba7cbabac3780a1b1b7b Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Fri, 15 Feb 2019 11:29:46 +0800
+Subject: [PATCH] Configure http and web-xi services
+
+---
+ avahi-daemon/Makefile.am    |  4 ++--
+ avahi-daemon/http.service   |  9 +++++++++
+ avahi-daemon/web-xi.service | 11 +++++++++++
+ 3 files changed, 22 insertions(+), 2 deletions(-)
+ create mode 100644 avahi-daemon/http.service
+ create mode 100644 avahi-daemon/web-xi.service
+
+diff --git a/avahi-daemon/Makefile.am b/avahi-daemon/Makefile.am
+index 9645e6e..ce1bf6b 100644
+--- a/avahi-daemon/Makefile.am
++++ b/avahi-daemon/Makefile.am
+@@ -70,8 +70,8 @@ pkgsysconf_DATA = \
+ 	hosts
+ 
+ dist_service_DATA = \
+-	ssh.service \
+-	sftp-ssh.service
++	http.service \
++	web-xi.service
+ 
+ dist_pkgdata_DATA = \
+ 	avahi-service.dtd
+diff --git a/avahi-daemon/http.service b/avahi-daemon/http.service
+new file mode 100644
+index 0000000..e21fe2f
+--- /dev/null
++++ b/avahi-daemon/http.service
+@@ -0,0 +1,10 @@
++<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
++<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
++<service-group>
++  <name replace-wildcards="yes">%h</name>
++  <service>
++    <type>_http._tcp</type>
++    <port>80</port>
++    <txt-record>Nickname=Undefined</txt-record>
++  </service>
++</service-group>
+diff --git a/avahi-daemon/web-xi.service b/avahi-daemon/web-xi.service
+new file mode 100644
+index 0000000..2145676
+--- /dev/null
++++ b/avahi-daemon/web-xi.service
+@@ -0,0 +1,11 @@
++<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
++<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
++<service-group>
++  <name replace-wildcards="yes">%h</name>
++  <service>
++    <type>_web-xi._tcp</type>
++    <port>80</port>
++    <txt-record>name=Undefined</txt-record>
++    <txt-record>version=1</txt-record>
++  </service>
++</service-group>

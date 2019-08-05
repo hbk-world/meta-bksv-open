@@ -1,0 +1,43 @@
+From 04a5b1bbbe9dab0837c8ddb8ee21f35f043807e6 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 7 Jan 2019 16:36:09 +0800
+Subject: [PATCH] SLX-417-Fix-race-with-bluetooth-driver
+
+---
+ drivers/net/wireless/laird/lrdmwl/sdio.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/wireless/laird/lrdmwl/sdio.c b/drivers/net/wireless/laird/lrdmwl/sdio.c
+index 796db3f..77ba421 100644
+--- a/drivers/net/wireless/laird/lrdmwl/sdio.c
++++ b/drivers/net/wireless/laird/lrdmwl/sdio.c
+@@ -852,18 +852,20 @@ static int mwl_sdio_program_firmware(struct mwl_priv *priv)
+ 
+ 		if (ret  == 0 && firmware_status == FIRMWARE_READY_SDIO) {
+ 			wiphy_err(priv->hw->wiphy,
+-				"Firmware already initialized! Resetting radio...\n");
++				"Firmware already initialized!\n");
+ 
+-			if (priv->if_ops.down_dev)
+-				priv->if_ops.down_dev(priv);
+-
+-			ret = mwl_sdio_reset(priv);
++			ret = mwl_check_fw_status(priv, MAX_FIRMWARE_POLL_TRIES);
++			if (ret) {
++				wiphy_err(priv->hw->wiphy, "FW status is not ready\n");
++			}
+ 
+-			if (priv->if_ops.up_dev)
+-				priv->if_ops.up_dev(priv);
++			/* Enabling interrupt after firmware is ready.
++			* Otherwise there may be abnormal interrupt DN_LD_HOST_INT_MASK
++			*/
++			mwl_sdio_enable_int(priv, true);
++			kfree(fwbuf);
++			return 0;
+ 
+-			if (ret)
+-				return ret;
+ 		}
+ 		else
+ 			break;

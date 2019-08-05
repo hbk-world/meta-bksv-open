@@ -1,0 +1,22 @@
+From 992a5a62b0636b369f3ecfcffaf279d36bcdfecb Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Tue, 11 Jun 2019 12:55:13 +0200
+Subject: [PATCH] Do not schedule rx_task tasklet when rx_task is disabled
+
+---
+ drivers/net/wireless/laird/lrdmwl/sdio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/laird/lrdmwl/sdio.c b/drivers/net/wireless/laird/lrdmwl/sdio.c
+index c856fca..aa27da1 100644
+--- a/drivers/net/wireless/laird/lrdmwl/sdio.c
++++ b/drivers/net/wireless/laird/lrdmwl/sdio.c
+@@ -1792,7 +1792,7 @@ static int mwl_sdio_process_int_status(struct mwl_priv *priv)
+ 		}
+ 
+ 		/* Indicate the received packets (card->rx_data_q)to MAC80211 */
+-		if (!priv->shutdown) {
++		if ((!priv->is_rx_schedule) && (atomic_read(&priv->rx_task.count) == 0)) {
+ 			tasklet_schedule(&priv->rx_task);
+ 		}
+ 	}

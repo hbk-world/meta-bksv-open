@@ -1,0 +1,60 @@
+From c60055a2e6d203bed9e2b3c800ef4adcf6318faf Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Wed, 17 Oct 2018 15:34:06 +0800
+Subject: [PATCH] Suppress CTRL-EVENT-SCAN-FAILED message
+
+---
+ wpa_supplicant/scan.c             | 18 ++++++++++++++++--
+ wpa_supplicant/wpa_supplicant_i.h |  3 +++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/wpa_supplicant/scan.c b/wpa_supplicant/scan.c
+index fb8ebdf..567a630 100644
+--- a/wpa_supplicant/scan.c
++++ b/wpa_supplicant/scan.c
+@@ -189,8 +189,18 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
+ 		if (wpa_s->wpa_state == WPA_SCANNING)
+ 			wpa_supplicant_set_state(wpa_s,
+ 						 wpa_s->scan_prev_wpa_state);
+-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED "ret=%d%s",
+-			ret, retry ? " retry=1" : "");
++
++		if (wpa_s->trace_count < 3) {
++			wpa_s->trace_count++;
++			wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED "ret=%d%s",
++				ret, retry ? " retry=1" : "");
++
++			if (wpa_s->trace_count == 3) {
++				wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED
++					"this error message disabled to avoid filling up logs");
++			}
++		}
++		
+ 		radio_work_done(work);
+ 
+ 		if (retry) {
+@@ -199,6 +209,10 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
+ 			wpa_supplicant_req_scan(wpa_s, 1, 0);
+ 		}
+ 		return;
++	} else if (wpa_s->trace_count > 0) {
++		wpa_s->trace_count = 0;
++		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED
++			"scan succeeded, error message re-enabled");
+ 	}
+ 
+ 	os_get_reltime(&wpa_s->scan_trigger_time);
+diff --git a/wpa_supplicant/wpa_supplicant_i.h b/wpa_supplicant/wpa_supplicant_i.h
+index ef9273d..7d59e23 100644
+--- a/wpa_supplicant/wpa_supplicant_i.h
++++ b/wpa_supplicant/wpa_supplicant_i.h
+@@ -1069,6 +1069,9 @@ struct wpa_supplicant {
+ 	 */
+ 	struct wpabuf *lci;
+ 	struct os_reltime lci_time;
++
++	/* B&K: Count of error traces output */
++	int trace_count;
+ };
+ 
+ 

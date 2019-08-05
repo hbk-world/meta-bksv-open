@@ -1,0 +1,21 @@
+From fe4966d48ece0747acee8b828a9d0553e4bb22da Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Fri, 15 Feb 2019 12:45:13 +0800
+Subject: [PATCH] Add TXT record 'type'
+
+---
+ avahi-daemon/web-xi.service | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/avahi-daemon/web-xi.service b/avahi-daemon/web-xi.service
+index 2145676..23ed538 100644
+--- a/avahi-daemon/web-xi.service
++++ b/avahi-daemon/web-xi.service
+@@ -6,6 +6,7 @@
+     <type>_web-xi._tcp</type>
+     <port>80</port>
+     <txt-record>name=Undefined</txt-record>
++    <txt-record>type=2245</txt-record>
+     <txt-record>version=1</txt-record>
+   </service>
+ </service-group>

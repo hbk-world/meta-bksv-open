@@ -1,0 +1,42 @@
+From c5cfb01baf413538ef41280d4bc267fdf84b991f Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Tue, 5 Mar 2019 20:25:23 +0800
+Subject: [PATCH] SLX-523, SLX-593: Ensure block cache is flushed before
+ switching boot partition
+
+---
+ src/functions.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/src/functions.c b/src/functions.c
+index 80bbe18..0909c43 100644
+--- a/src/functions.c
++++ b/src/functions.c
+@@ -395,7 +395,13 @@ int raw_write_run(struct fun_context *fctx)
+                                   raw_write_final_hole_callback,
+                                   &rwc));
+ 
+-    return ptbw_flush(&rwc.ptbw);
++    OK_OR_RETURN(ptbw_flush(&rwc.ptbw));
++
++    fwup_warnx("Flushing block cache");
++    OK_OR_RETURN(block_cache_flush(fctx->output));
++
++    sleep(5);
++    return 0;
+ }
+ 
+ int raw_memset_validate(struct fun_context *fctx)
+@@ -1547,5 +1550,11 @@ int part_write_run(struct fun_context *fctx)
+                                   part_write_final_hole_callback,
+                                   &rwc));
+ 
+-    return ptbw_flush(&rwc.ptbw);
++    OK_OR_RETURN(ptbw_flush(&rwc.ptbw));
++
++    fwup_warnx("Flushing block cache");
++    OK_OR_RETURN(block_cache_flush(fctx->output));
++
++    sleep(5);
++    return 0;
+ }

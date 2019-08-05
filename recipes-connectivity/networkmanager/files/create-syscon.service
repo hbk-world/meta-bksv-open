@@ -1,0 +1,12 @@
+[Unit]
+Description=Folder creation for NetworkManager
+Before=NetworkManager.service
+ConditionPathExists=!/mnt/bksv/system-connections
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/create-syscon.sh
+StandardOutput=syslog
+
+[Install]
+WantedBy=multi-user.target

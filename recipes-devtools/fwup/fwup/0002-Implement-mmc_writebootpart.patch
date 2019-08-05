@@ -1,0 +1,255 @@
+From 00ca11f9075e177c29933049b4a37fdaa4fc0568 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 21 Jan 2019 17:51:50 +0800
+Subject: [PATCH] Implement mmc_writebootpart
+
+---
+ README.md        |   3 +-
+ src/cfgfile.c    |   3 +-
+ src/functions.c  | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/functions.h  |   3 ++
+ src/fwup.c       |   1 +
+ src/fwup_apply.c |   7 ++++
+ src/fwup_apply.h |   2 +-
+ 7 files changed, 130 insertions(+), 3 deletions(-)
+
+diff --git a/README.md b/README.md
+index 9425204..976acf0 100644
+--- a/README.md
++++ b/README.md
+@@ -30,7 +30,7 @@ Here's a full list of features:
+ 1. Multiple firmware update task options per archive so that one archive can
+    upgrade varying target configurations
+ 
+-1. Basic disk partitioning and FAT filesystem manipulation
++1. Basic disk partitioning, eMMC boot partition and FAT filesystem manipulation
+ 
+ 1. Human and machine readable progress.
+ 
+@@ -566,6 +566,7 @@ uboot_recover(my_uboot_env)             | 0.15.0 | If the U-Boot environment is
+ uboot_clearenv(my_uboot_env)            | 0.10.0 | Initialize a clean, variable free U-boot environment
+ uboot_setenv(my_uboot_env, name, value) | 0.10.0 | Set the specified U-boot variable
+ uboot_unsetenv(my_uboot_env, name)      | 0.10.0 | Unset the specified U-boot variable
++mmc_writebootpart(partition, offset)    | 0.17.0 | Write a resource to the specified eMMC boot partition. The `offset` is specified as a number of 512-byte blocks, and the `partition` number must be 1 or 2. The boot partition will be left write-protected
+ 
+ ## Sparse files
+ 
+diff --git a/src/cfgfile.c b/src/cfgfile.c
+index 76a96cf..ec91dc3 100644
+--- a/src/cfgfile.c
++++ b/src/cfgfile.c
+@@ -494,7 +494,8 @@ static cfg_opt_t uboot_environment_opts[] = {
+     CFG_FUNC("info", CB), \
+     CFG_FUNC("path_write", CB), \
+     CFG_FUNC("pipe_write", CB), \
+-    CFG_FUNC("execute", CB)
++    CFG_FUNC("execute", CB), \
++    CFG_FUNC("mmc_writebootpart", CB)
+ 
+ static cfg_opt_t task_on_init_opts[] = {
+     CFG_ON_EVENT_FUNCTIONS(cb_on_init_func),
+diff --git a/src/functions.c b/src/functions.c
+index 34f28af..c49dab3 100644
+--- a/src/functions.c
++++ b/src/functions.c
+@@ -64,6 +64,7 @@ DECLARE_FUN(info);
+ DECLARE_FUN(path_write);
+ DECLARE_FUN(pipe_write);
+ DECLARE_FUN(execute);
++DECLARE_FUN(mmc_writebootpart);
+ 
+ struct fun_info {
+     const char *name;
+@@ -99,6 +100,7 @@ static struct fun_info fun_table[] = {
+     FUN_INFO(path_write),
+     FUN_INFO(pipe_write),
+     FUN_INFO(execute),
++    FUN_INFO(mmc_writebootpart),
+ };
+ 
+ static struct fun_info *lookup(int argc, const char **argv)
+@@ -1166,3 +1168,115 @@ int execute_run(struct fun_context *fctx)
+     progress_report(fctx->progress, FWUP_BLOCK_SIZE);
+     return 0;
+ }
++
++int mmc_writebootpart_validate(struct fun_context *fctx)
++{
++    if (fctx->type != FUN_CONTEXT_FILE)
++        ERR_RETURN("mmc_writebootpart only usable in on-resource");
++
++    if (fctx->argc != 3)
++        ERR_RETURN("mmc_writebootpart requires a boot partition number and a block offset");
++
++    int partition = strtol(fctx->argv[1], NULL, 0);
++    if (partition < 1 || partition > 2)
++        ERR_RETURN("mmc_writebootpart requires the boot partition number to be 1 or 2");
++
++    CHECK_ARG_UINT64(fctx->argv[2], "raw_write requires a non-negative integer block offset");
++
++    return 0;
++}
++int mmc_writebootpart_compute_progress(struct fun_context *fctx)
++{
++    return process_resource_compute_progress(fctx, false);
++}
++struct mmc_writebootpart_context {
++    off_t last_offset;
++    FILE *fp;
++};
++static int mmc_writebootpart_pwrite_callback(void *context, const void *buf, size_t count, off_t offset)
++{
++    struct mmc_writebootpart_context *pwc = (struct mmc_writebootpart_context *) context;
++
++    if (pwc->last_offset != offset) {
++        // Fill in the gap with zeros
++        char zeros[FWUP_BLOCK_SIZE];
++        memset(zeros, 0, sizeof(zeros));
++
++        while (pwc->last_offset < offset) {
++            size_t to_write = offset - pwc->last_offset;
++            if (to_write > sizeof(zeros))
++                to_write = sizeof(zeros);
++            size_t written = fwrite(zeros, 1, to_write, pwc->fp);
++            if (written != count)
++                ERR_RETURN("mmc_writebootpart failed");
++            pwc->last_offset += to_write;
++        }
++    }
++    size_t written = fwrite(buf, 1, count, pwc->fp);
++    if (written != count)
++        ERR_RETURN("mmc_writebootpart failed");
++    pwc->last_offset += count;
++    return 0;}
++static int mmc_writebootpart_final_hole_callback(void *context, off_t hole_size, off_t file_size)
++{
++    (void) hole_size;
++
++    // Write a zero at the last offset to force the file to expand to the proper size
++    char zero = 0;
++    return mmc_writebootpart_pwrite_callback(context, &zero, 1, file_size - 1);
++}
++int mmc_writebootpart_run(struct fun_context *fctx)
++{
++    int partition = strtoull(fctx->argv[1], NULL, 0);
++
++    // Prepare system commands
++    const char *cmd_format = "echo %d > /sys/block/%sboot%d/force_ro";
++    const char *device_name = strrchr(fctx->mmc_device_path, '/') + 1;
++
++    char cmd_rw[64];
++    char cmd_ro[64];
++    snprintf(cmd_rw, sizeof(cmd_rw), cmd_format, 0, device_name, partition - 1);
++    snprintf(cmd_ro, sizeof(cmd_ro), cmd_format, 1, device_name, partition - 1);
++
++    // Write enable boot partition
++    int status = system(cmd_rw);
++    if (status < 0)
++        ERR_RETURN("mmc_writebootpart couldn't run '%s'", cmd_rw);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd_rw, status);
++
++    // Invoke dd to write boot partition
++    char cmd_dd[64];
++    snprintf(cmd_dd, sizeof(cmd_dd), "dd of=/dev/%sboot%d bs=%d seek=%lld status=none",
++        device_name, partition - 1, FWUP_BLOCK_SIZE, strtoull(fctx->argv[2], NULL, 0));
++
++    struct mmc_writebootpart_context rwc;
++    rwc.last_offset = 0;
++#if defined(_WIN32) || defined(__CYGWIN__)
++    rwc.fp = popen(cmd_dd, "wb");
++#else
++    rwc.fp = popen(cmd_dd, "w");
++#endif
++    if (!rwc.fp)
++        ERR_RETURN("mmc_writebootpart couldn't run '%s'", cmd_dd);
++
++    int rc = 0;
++    OK_OR_CLEANUP(process_resource(fctx,
++                            true,
++                            mmc_writebootpart_pwrite_callback,
++                            mmc_writebootpart_final_hole_callback,
++                            &rwc));
++ 
++cleanup:
++    if (pclose(rwc.fp) != 0)
++        ERR_RETURN("command '%s' returned an error to mmc_writebootpart", cmd_dd);
++
++    // Make boot partition read-only
++    status = system(cmd_ro);
++    if (status < 0)
++        ERR_RETURN("mmc_writebootpart couldn't run '%s'",cmd_ro);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd_ro, status);
++
++    return rc;
++}
+diff --git a/src/functions.h b/src/functions.h
+index 56abdec..b4f48e7 100644
+--- a/src/functions.h
++++ b/src/functions.h
+@@ -58,6 +58,9 @@ struct fun_context {
+     // no more data is available. If <0, then there's an error.
+     int (*read)(struct fun_context *fctx, const void **buffer, size_t *len, off_t *offset);
+ 
++    // Path to the eMMC device to apply the update to
++    const char *mmc_device_path;
++
+     // Output location (NULL if not opened yet.)
+     struct block_cache *output;
+ 
+diff --git a/src/fwup.c b/src/fwup.c
+index 94d4192..06b5553 100644
+--- a/src/fwup.c
++++ b/src/fwup.c
+@@ -659,6 +659,7 @@ int main(int argc, char **argv)
+ #endif
+ 
+         if (fwup_apply(input_filename,
++                       mmc_device_path,
+                        task,
+                        output_fd,
+                        &progress,
+diff --git a/src/fwup_apply.c b/src/fwup_apply.c
+index 4a81073..ca593d8 100644
+--- a/src/fwup_apply.c
++++ b/src/fwup_apply.c
+@@ -373,6 +373,7 @@ cleanup:
+ }
+ 
+ int fwup_apply(const char *fw_filename,
++               const char *mmc_device_path,
+                const char *task_prefix,
+                int output_fd,
+                struct fwup_progress *progress,
+@@ -386,6 +387,7 @@ int fwup_apply(const char *fw_filename,
+     struct fun_context fctx;
+     memset(&fctx, 0, sizeof(fctx));
+     fctx.progress = progress;
++    fctx.mmc_device_path = strdup(mmc_device_path);
+ 
+     // Report 0 progress before doing anything
+     progress_report(fctx.progress, 0);
+@@ -516,5 +518,10 @@ cleanup:
+         fctx.cfg = NULL;
+     }
+ 
++    if (fctx.mmc_device_path) {
++        free(fctx.mmc_device_path);
++        fctx.mmc_device_path = NULL;
++    }
++
+     return rc;
+ }
+diff --git a/src/fwup_apply.h b/src/fwup_apply.h
+index 04b3dad..b3bd888 100644
+--- a/src/fwup_apply.h
++++ b/src/fwup_apply.h
+@@ -22,6 +22,6 @@
+ 
+ struct fwup_progress;
+ 
+-int fwup_apply(const char *fw_filename, const char *task, int output_fd, struct fwup_progress *progress, unsigned char *const* public_keys, const struct version_t *minimum_version, bool enable_trim);
++int fwup_apply(const char *fw_filename, const char *mmc_device_path, const char *task, int output_fd, struct fwup_progress *progress, unsigned char *const* public_keys, const struct version_t *minimum_version, bool enable_trim);
+ 
+ #endif // FWUP_APPLY_H

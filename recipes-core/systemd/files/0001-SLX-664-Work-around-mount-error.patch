@@ -1,0 +1,27 @@
+From 66dcdff58c62301a6686273db58a8af3a41b5604 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Tue, 4 Jun 2019 14:17:19 +0800
+Subject: [PATCH] SLX-664: Work around mount error
+
+---
+ src/core/mount.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/mount.c b/src/core/mount.c
+index 21437da..159198f 100644
+--- a/src/core/mount.c
++++ b/src/core/mount.c
+@@ -1280,9 +1280,11 @@ static void mount_sigchld_event(Unit *u, pid_t pid, int code, int status) {
+                         /* Either /bin/mount has an unexpected definition of success,
+                          * or someone raced us and we lost. */
+                         log_unit_warning(UNIT(m), "Mount process finished, but there is no mount.");
+-                        f = MOUNT_FAILURE_PROTOCOL;
++                        log_unit_warning(UNIT(m), "But assuming success anyway");
++                        mount_enter_mounted(m, f);
++                } else {
++                        mount_enter_dead(m, f);
+                 }
+-                mount_enter_dead(m, f);
+                 break;
+ 
+         case MOUNT_MOUNTING_DONE:

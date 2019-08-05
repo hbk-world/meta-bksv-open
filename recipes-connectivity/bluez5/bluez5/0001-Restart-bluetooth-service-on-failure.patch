@@ -1,0 +1,22 @@
+From 49649bebb71688e4fa2414f7fe6bf704b9ff6357 Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Thu, 14 Feb 2019 15:23:50 +0100
+Subject: [PATCH] Restart bluetooth service on failure
+
+---
+ src/bluetooth.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/bluetooth.service.in b/src/bluetooth.service.in
+index f799f65..acf6a76 100644
+--- a/src/bluetooth.service.in
++++ b/src/bluetooth.service.in
+@@ -9,7 +9,7 @@ BusName=org.bluez
+ ExecStart=@libexecdir@/bluetoothd
+ NotifyAccess=main
+ #WatchdogSec=10
+-#Restart=on-failure
++Restart=on-failure
+ CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+ LimitNPROC=1
+ ProtectHome=true
