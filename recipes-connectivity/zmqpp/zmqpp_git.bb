@@ -10,7 +10,7 @@ LICENSE = "MPL-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=815ca599c9df247a0c7f619bab123dad"
 
 SRC_URI = "git://github.com/zeromq/zmqpp.git;protocol=https;branch=develop"
-PACKAGES = "${PN} ${PN}-dev" 
+PACKAGES = "${PN} ${PN}-dev ${PN}-dbg" 
 
 # Modify these as desired
 PV = "1.1+git${SRCPV}"
@@ -31,4 +31,8 @@ EXTRA_OECMAKE = "-DZMQPP_BUILD_STATIC=YES \
 "
 FILES_${PN} = "${libdir}/libzmqpp.so"
 FILES_${PN}-dev = "${includedir}" 
-FILES_${PN}-dbg = "/usr/src/"
+FILES_${PN}-dbg = "/usr/src/ /usr/lib/.debug/"
+
+do_install_append() {
+	rm ${D}/usr/lib/libzmqpp-static.a
+}

@@ -1,3 +1,11 @@
+From 8010763c7790c37789e34d533a3abc19f04d22a9 Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Thu, 13 Sep 2018 09:32:30 +0200
+
+---
+ setup.py | 2 --
+ 1 file changed, 2 deletions(-)
+
 diff --git a/setup.py b/setup.py
 index d243eaa..98099bc 100755
 --- a/setup.py
