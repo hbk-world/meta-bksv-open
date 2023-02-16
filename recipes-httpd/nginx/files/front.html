@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>BK2255-<!--# include file="serial_number" --> WebXi Front</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<style>
+@font-face { font-family: 'Sinews Sans Pro'; src: url(SinewsSansPro-Regular.ttf) format('truetype'); }
+html { border: 0 solid #b2c7bf; border-top-width: 6px; }
+html, body { margin: 0; padding: 0; font-family: 'Sinews Sans Pro', 'Open Sans', sans-serif; font-size: 16px; height: 100%; overflow-y: hidden; }
+input[ type = "text" ] { font-family: 'Sinews Sans Pro', 'Open Sans', sans-serif; font-size: 16px; }
+div { overflow: auto; }
+div#container { height: 100%; min-height: auto; display: flex; }
+table { text-align: left; }
+h1.title { display: inline-block; font-family: 'Sinews Sans Pro', 'Open Sans', sans-serif; font-weight: 400; font-size: 30px; color: white; margin: 8px 0 0 0; padding: 17px 12px; }
+h1.title span.breadcrumb { font-size: 18px; color: #8e9a56; }
+section { display: flex; flex-flow: column; height:100%; margin:0; }
+header.header1 { min-height: 99px; }
+header.header2 { min-height: 84px; }
+#logo { min-height: 99px; background-position: 12px 31px; background-size: 268px; background-repeat: no-repeat; background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNjgnIGhlaWdodD0nMzUnIHZpZXdCb3g9JzAgMCA5ODMuOSAxMzAuNCcgc3R5bGU9J2VuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgOTgzLjkgMTMwLjQ7Jz48c3R5bGUgdHlwZT0ndGV4dC9jc3MnPi5zdDB7ZmlsbDojMDA1Njk1O308L3N0eWxlPjxyZWN0IHg9JzQ0Mi41JyB5PScyMy4zJyB3aWR0aD0nMTguNCcgaGVpZ2h0PSc4Mi4yJy8+PHBhdGggZD0nTTAsMjMuM2g0My45YzIxLjEsMCwyNi41LDEyLjYsMjYuNSwyMWMwLDExLjgtNi45LDE1LjEtMTAuNSwxNi44YzEwLjUsMy44LDEzLjMsMTEuOCwxMy4zLDE5LjljMCw2LjUtMi45LDEyLjctNy40LDE2LjkgYy00LjksNC42LTkuNiw3LjQtMjcuMiw3LjRIMFYyMy4zeiBNMTgsOTEuMWgyMy40YzguNywwLDEzLjgtMy43LDEzLjgtMTJjMC03LjItNi41LTkuOS0xMi45LTkuOUgxOFY5MS4xeiBNMTgsNTUuM2gyMi40IGM3LjEsMCwxMi43LTIuNiwxMi43LTkuMWMwLTYuNy01LTguOC0xMy4yLTguOEgxOFY1NS4zeicvPjxwYXRoIGQ9J00xNTYuOSwzNC4zaC0xNS4zVjIxLjFoMTUuM1YzNC4zeiBNMTgwLjUsMzQuM2gtMTUuMlYyMS4xaDE1LjJWMzQuM3ogTTE5MCwxMDUuMmgtMTYuMnYtOC43aC0wLjJjLTMuOSw2LjYtMTAuNiwxMC4zLTE5LjYsMTAuM2MtMTIuNywwLTIxLjktNi45LTIxLjktMjIuNlY0My44SDE0OXYzOC4xYzAsOS41LDUuOCwxMS4zLDExLDExLjNjNS42LDAsMTMuMS0zLDEzLjEtMTRWNDMuOEgxOTAgVjEwNS4yeicvPjxwYXRoIGQ9J00yNjAuNiw4Ny4yYy00LjUsMTQuOC0xNy4zLDE5LjYtMjguMywxOS42Yy0xOC4yLDAtMzIuMS04LjMtMzIuMS0zMy42YzAtNy40LDIuNy0zMS4xLDMwLjktMzEuMWMxMi43LDAsMzAuMyw1LjgsMzAuMywzMy44IHYyLjloLTQ0LjJjMC41LDQuNiwxLjQsMTUsMTUuMSwxNWM0LjcsMCw5LjYtMi4zLDEwLjktNi43SDI2MC42eiBNMjQzLjksNjguNGMtMS05LjktNy42LTEyLjktMTMuMS0xMi45Yy04LDAtMTIuMiw0LjktMTMuMiwxMi45IEgyNDMuOXonLz48cmVjdCB4PScyNzEnIHk9JzIzLjInIHdpZHRoPScxOC4xJyBoZWlnaHQ9JzgyLjEnLz48cGF0aCBkPSdNNDA2LjksMTA1LjJoLTIwLjVsLTUuOS03Yy01LjEsNC44LTExLjcsOS4yLTI0LjgsOS4yYy0xNi42LDAtMjcuMS0xMS4yLTI3LjEtMjMuNWMwLTgsMi4zLTE1LjgsMTYuNy0yNC4xbDEuOC0xIGMtMy42LTMuOS03LjktMTAuMi03LjktMTcuM2MwLTExLjMsOS42LTE5LDIzLjEtMTljOS42LDAsMjEuMyw1LjksMjEuMywxOS4yYzAsMTEuNy0xMC45LDE3LjgtMTQuNCwxOS43bDEyLjMsMTQuNSBjMi4yLTMuMiwzLjktNy4zLDQuNS0xMy42aDE1Yy0xLjEsMTEuMi00LjEsMTcuNy05LjksMjQuOUw0MDYuOSwxMDUuMnogTTM2MS44LDM0LjZjLTMuNywwLTcsMi4zLTcsNi43YzAsMi44LDIuMiw2LjEsNi4zLDEwLjQgYzQuNi0yLjgsOC02LDgtMTAuM0MzNjksMzYuOCwzNjUuOSwzNC42LDM2MS44LDM0LjYgTTM1NS44LDY5Yy03LjEsNS0xMC4zLDcuMy0xMC4zLDEzLjljMCwzLjIsMi43LDExLDEyLjgsMTEgYzUuNiwwLDEwLjUtMy4yLDEzLjQtNS44TDM1NS44LDY5eicvPjxwb2x5Z29uIHBvaW50cz0nNTE2LjYsMjMuMyA0OTMuOSwyMy4zIDQ2MC44LDYyIDQ2MC44LDYyLjMgNDk0LjYsMTA1LjIgNTE4LjIsMTA1LjIgNDgzLjQsNjIuMiAnLz48cGF0aCBkPSdNNTMxLjUsMTI5bC05LjktMTIuMWMwLDAsMC40LTAuMSwwLjYtMC4yYzEuNC0wLjUsMi44LTEuNywyLjgtNS40VjQzLjhINTQydjY3LjljMCwxMC45LTMuNSwxNS40LTkuOCwxNy4yTDUzMS41LDEyOXonLz48cmVjdCB4PSc1MjUuMScgeT0nMjEuMScgd2lkdGg9JzE2LjknIGhlaWdodD0nMTUnLz48cGF0aCBkPSdNNjUxLjMsODcuMmMtNC41LDE0LjgtMTcuMywxOS42LTI4LjMsMTkuNmMtMTUuNywwLjItMjAuNS01LjUtMjQuMS05LjljLTQuMSw2LjItMTMuNiw5LjktMjQuMyw5LjkgYy05LjMsMC0yMi45LTIuNy0yMi45LTE4LjhjMC03LjQsMy45LTE1LjUsMTYuMy0xNy41bDE1LjgtMi41YzguMi0xLjEsOC43LTEuNCw4LjctNmMwLTIuMywwLTYuOC0xMS45LTYuOCBjLTkuMiwwLTEwLjIsNS45LTEwLjIsOC43SDU1NGMxLjUtMTguMSwxNi0yMS42LDI5LTIxLjZjMTAuNCwwLDE2LjcsNC4yLDE5LjksNi44YzMuOC0yLjgsOC44LTYuNiwxOC45LTYuOCBjMTIuNywwLDMwLjMsNS44LDMwLjMsMzMuOHYyLjloLTQ0LjJjMC41LDQuNiwxLjUsMTUsMTUuMSwxNWM0LjcsMCw5LjYtMi4zLDEwLjktNi43SDY1MS4zeiBNNTkyLjMsNzcuNWMtMi43LDAuMi00LjMsMC4xLTEyLjYsMS40IGMtNi42LDEtMTEsMi40LTExLDkuMmMwLDQuNywzLjgsNy4yLDkuNiw3LjJjNi41LDAsMTQtNS4yLDE0LTExLjhWNzcuNXogTTYzNC42LDY4LjRjLTEtOS45LTcuNi0xMi45LTEzLjEtMTIuOSBjLTgsMC0xMi4yLDQuOS0xMy4yLDEyLjlINjM0LjZ6Jy8+PHBhdGggZD0nTTY2Mi4yLDQzLjhoMTYuMnY2LjZsMC4yLTAuNGM0LjItNC42LDcuNC02LjYsMTcuNy02LjZjMS4xLDAsNSwwLDUsMGwwLDEzLjJjMCwwLTUsMC02LjYsMGMtMTMuMiwwLTE1LjYsOS44LTE1LjYsMTYuNnYzMiBoLTE3VjQzLjh6Jy8+PHBhdGggZD0nTTgzLjksNDMuOGgxNi4ydjYuNmwwLjItMC40YzQuMi00LjYsNy40LTYuNiwxNy43LTYuNmMxLjEsMCw1LDAsNSwwbDAsMTMuMmMwLDAtNSwwLTYuNiwwYy0xMy4yLDAtMTUuNiw5LjgtMTUuNiwxNi42djMyIGgtMTdWNDMuOHonLz48cGF0aCBjbGFzcz0nc3QwJyBkPSdNNzY4LjEsNjguMWMtMi4xLDAuNi00LjcsMC45LTcuMywwLjloLTE4LjRWNDMuOGgxNy4yYzIuNywwLDQuOSwwLDYuOSwwLjVjMy42LDAuOCw2LjEsMi43LDYuMSw1LjggYzAsMy4yLTIuNiw1LTYuOCw1LjhjNC43LDAuNiw3LjksMi41LDcuOSw2LjFDNzczLjcsNjUuMSw3NzEuMyw2Ny4xLDc2OC4xLDY4LjEgTTc1OC4zLDQ3LjloLTcuNXY2LjNoNy4xYzIuOSwwLDUuNi0wLjYsNS42LTMuMiBDNzYzLjYsNDguNiw3NjEsNDcuOSw3NTguMyw0Ny45IE03NTguOSw1OGgtOHY2LjhoNy43YzMuMSwwLDUuOS0wLjYsNS45LTMuNEM3NjQuNCw1OC44LDc2Miw1OCw3NTguOSw1OCcvPjxwYXRoIGNsYXNzPSdzdDAnIGQ9J005NTEuNiw1OS42aDkuNXYyNS4xaC05LjVWNTkuNnogTTk3My4xLDg0LjdsLTEyLTEzLjhMOTcyLDU5LjZoMTAuM2wtMTEuOSwxMS4xbDEzLjUsMTRIOTczLjF6Jy8+PHBhdGggY2xhc3M9J3N0MCcgZD0nTTkwNS40LDEwNS4xYy0yLjMtMS41LTQuNy0yLjktNy4xLTQuMmMzLTQuMyw1LjUtOSw3LjQtMTMuOWgtNC41Yy0xLjgsNC4zLTQsOC4zLTYuNywxMi4xIGMtNC4yLTEuOS04LjUtMy40LTEzLTQuNWMwLjktMi40LDEuNi01LDIuMy03LjZoLTQuM2MtMC42LDIuMy0xLjMsNC41LTIuMSw2LjdjLTQuNi0wLjktOS4zLTEuNC0xNC0xLjV2LTUuMWgtNC4ydjUuMSBjLTQuOCwwLjEtOS41LDAuNi0xNC4xLDEuNWMtMC44LTIuMS0xLjUtNC40LTIuMS02LjdoLTQuM2MwLjcsMi42LDEuNCw1LjIsMi4zLDcuNmMtNC41LDEuMS04LjgsMi42LTEzLDQuNSBjLTIuNy0zLjgtNS03LjgtNi43LTEyLjFoLTQuNWMxLjksNC45LDQuNCw5LjYsNy40LDEzLjljLTIuNCwxLjMtNC44LDIuNy03LjEsNC4yYy00LjktNS4zLTguOC0xMS40LTExLjYtMTguMmgtNC41IGM5LjIsMjQuMywzMi43LDQxLjcsNjAuMyw0MS43YzI3LjUsMCw1MS0xNy40LDYwLjMtNDEuN0g5MTdDOTE0LjIsOTMuNyw5MTAuMyw5OS44LDkwNS40LDEwNS4xIE04NzkuOCw5OC40YzQuMSwxLDguMSwyLjMsMTEuOSw0IGMtMy4zLDQtNy4yLDcuNS0xMS41LDEwLjZjLTItMS4zLTQuNC0yLjQtNi45LTMuM0M4NzUuOCwxMDYuNCw4NzgsMTAyLjYsODc5LjgsOTguNCBNODYzLjMsOTYuMmM0LjIsMC4xLDguNCwwLjUsMTIuNCwxLjMgYy0xLjksNC4yLTQuMiw3LjktNi44LDExYy0xLjgtMC40LTMuNy0wLjYtNS43LTAuN1Y5Ni4yeiBNODU5LjEsOTYuMnYxMS42Yy0xLjksMC4xLTMuOCwwLjMtNS43LDAuN2MtMi42LTMuMS00LjktNi44LTYuOC0xMSBDODUwLjcsOTYuOCw4NTQuOSw5Ni4zLDg1OS4xLDk2LjIgTTg0Mi41LDk4LjRjMS44LDQuMiw0LDgsNi41LDExLjNjLTIuNiwwLjgtNC45LDEuOS02LjksMy4zYy00LjMtMy4xLTguMi02LjYtMTEuNS0xMC42IEM4MzQuNCwxMDAuNyw4MzguNCw5OS40LDg0Mi41LDk4LjQgTTgzNi4xLDExOC45Yy01LjktMi43LTExLjQtNi40LTE2LjEtMTAuOGMyLjItMS40LDQuNC0yLjcsNi43LTMuOGMzLjUsNC4zLDcuNSw4LjEsMTIsMTEuNCBDODM3LjcsMTE2LjcsODM2LjgsMTE3LjgsODM2LjEsMTE4LjkgTTg2MS4yLDEyNC40Yy03LjUsMC0xNC42LTEuNC0yMS4yLTMuOWMzLjctNS4xLDEyLTguNiwyMS4yLTguNmM5LjIsMCwxNy41LDMuNSwyMS4yLDguNiBDODc1LjgsMTIzLjEsODY4LjcsMTI0LjQsODYxLjIsMTI0LjQgTTg4Ni4zLDExOC45Yy0wLjctMS4yLTEuNi0yLjItMi43LTMuMmM0LjUtMy4zLDguNi03LjIsMTItMTEuNGMyLjMsMS4yLDQuNSwyLjQsNi43LDMuOCBDODk3LjcsMTEyLjUsODkyLjMsMTE2LjIsODg2LjMsMTE4LjknLz48cGF0aCBjbGFzcz0nc3QwJyBkPSdNODE3LDIzLjVjMi4zLDEuNiw0LjgsMyw3LjMsNC4zYy0zLDQuMy01LjUsOC45LTcuNCwxMy44aDQuNWMxLjgtNC4yLDQtOC4yLDYuNy0xMS45YzQuMiwxLjksOC41LDMuNCwxMi45LDQuNSBjLTAuOSwyLjQtMS43LDQuOS0yLjMsNy41aDQuM2MwLjYtMi4zLDEuMy00LjUsMi4xLTYuNWM0LjUsMC45LDkuMiwxLjQsMTMuOSwxLjV2NWg0LjJ2LTVjNC43LTAuMSw5LjQtMC42LDEzLjktMS41IGMwLjgsMi4xLDEuNSw0LjMsMi4xLDYuNWg0LjNjLTAuNy0yLjYtMS40LTUuMS0yLjMtNy40YzQuNS0xLjEsOC44LTIuNiwxMy00LjVjMi43LDMuNyw0LjksNy43LDYuNywxMS45aDQuNWMtMS45LTQuOS00LjQtOS41LTcuNC0xMy43YzIuNS0xLjMsNC45LTIuNyw3LjMtNC4zYzQuOCw1LjIsOC44LDExLjMsMTEuNSwxOGg0LjVDOTEyLjIsMTcuMyw4ODguNywwLDg2MS4yLDBjLTI3LjUsMC01MSwxNy4zLTYwLjIsNDEuNmg0LjVDODA4LjIsMzQuOSw4MTIuMSwyOC44LDgxNywyMy41IE04NDIuNiwzMC4yYy00LjEtMS04LjEtMi4zLTExLjktMy45YzMuMy00LDcuMi03LjUsMTEuNi0xMC41YzIsMS4zLDQuMywyLjQsNi45LDMuMkM4NDYuNywyMi4yLDg0NC41LDI2LDg0Mi42LDMwLjIgTTg1OS4xLDMyLjRjLTQuMi0wLjEtOC4zLTAuNS0xMi4zLTEuM2MxLjktNC4yLDQuMi03LjksNi45LTExYzEuOCwwLjMsMy42LDAuNiw1LjUsMC43VjMyLjR6IE04NjMuMywzMi40VjIwLjhjMS45LTAuMSwzLjctMC4zLDUuNC0wLjZjMi42LDMuMSw0LjksNi44LDYuOSwxMUM4NzEuNiwzMS45LDg2Ny40LDMyLjMsODYzLjMsMzIuNCBNODc5LjcsMzAuM2MtMS45LTQuMi00LTgtNi41LTExLjNjMi41LTAuOCw0LjktMS45LDYuOS0zLjJjNC4zLDMsOC4yLDYuNiwxMS41LDEwLjVDODg3LjgsMjgsODgzLjgsMjkuMyw4NzkuNywzMC4zIE04ODYuNCw5LjdjNS45LDIuNywxMS4zLDYuNCwxNiwxMC44Yy0yLjIsMS40LTQuNSwyLjgtNi45LDMuOWMtMy41LTQuMi03LjUtOC4xLTEyLTExLjNDODg0LjYsMTIuMSw4ODUuNiwxMC45LDg4Ni40LDkuNyBNODYxLjIsNC4yYzcuNSwwLDE0LjYsMS40LDIxLjMsMy45Yy0zLjcsNS4xLTEyLDguNi0yMS4yLDguNmMtOS4zLDAtMTcuNi0zLjUtMjEuMi04LjZDODQ2LjYsNS41LDg1My43LDQuMiw4NjEuMiw0LjIgTTgzNi4xLDkuNyBjMC44LDEuMiwxLjcsMi40LDIuOCwzLjRjLTQuNSwzLjMtOC42LDcuMS0xMiwxMS40Yy0yLjQtMS4yLTQuNi0yLjUtNi45LTMuOUM4MjQuNywxNi4xLDgzMC4xLDEyLjQsODM2LjEsOS43Jy8+PHBhdGggY2xhc3M9J3N0MCcgZD0nTTk4My42LDUyLjl2LTkuMmgtNjEuNGgtNC40aC0xMS41aC00LjRoLTE3LjdoLTQuM2gtMTYuNmgtNC4yaC0xNi42aC00LjNoLTE3LjdIODE2aC0xMS41aC00LjRoLTEuNSBjLTEsMy0xLjgsNi0yLjMsOS4yaDEuNWMtMC40LDIuMi0wLjcsNC40LTAuOCw2LjdoLTEuNWMtMC4xLDEuNi0wLjIsMy4yLTAuMiw0LjhjMCwxLjUsMCwzLDAuMSw0LjRoMS41YzAuMiwyLjMsMC40LDQuNSwwLjgsNi43aC01NS4zdjkuMmg1Ny43YzAsMCwwLDAsMCwwaDQuNGMwLDAsMCwwLDAsMGgxMS40YzAsMCwwLDAsMCwwaDQuNGMwLDAsMCwwLDAsMGgxNy43YzAsMCwwLDAsMCwwaDQuM2MwLDAsMCwwLDAsMGgxNi43djBoNC4ydjBIODgwYzAsMCwwLDAsMCwwaDQuM2MwLDAsMCwwLDAsMEg5MDJjMCwwLDAsMCwwLDBoNC40YzAsMCwwLDAsMCwwaDExLjRjMCwwLDAsMCwwLDBoNC40YzAsMCwwLDAsMCwwaDEuNWMxLTMsMS44LTYuMSwyLjMtOS4yaC0xLjVjMC40LTIuMiwwLjctNC40LDAuOC02LjdoMS41YzAuMS0xLjUsMC4yLTIuOSwwLjItNC40YzAtMS42LDAtMy4yLTAuMi00LjhoLTEuNWMtMC4yLTIuMy0wLjQtNC41LTAuOC02LjdIOTgzLjZ6IE05MDQuNSw1Mi45YzAuNCwyLjIsMC44LDQuNSwwLjksNi43aC0xOS4xYy0wLjEtMi4zLTAuMy00LjUtMC42LTYuN0g5MDQuNXogTTg4MS42LDUyLjljMC4zLDIuMiwwLjUsNC40LDAuNiw2LjdoLTE4Ljl2LTYuN0g4ODEuNnogTTg1OS4xLDUyLjl2Ni43aC0xOC45YzAuMS0yLjMsMC4zLTQuNSwwLjYtNi43SDg1OS4xeiBNODM2LjYsNTIuOWMtMC4zLDIuMi0wLjUsNC41LTAuNiw2LjdoLTE5YzAuMi0yLjMsMC41LTQuNSwwLjktNi43SDgzNi42eiBNODAyLDUyLjloMTEuNmMtMC40LDIuMi0wLjcsNC41LTAuOSw2LjdoLTExLjZDODAxLjMsNTcuMyw4MDEuNiw1NS4xLDgwMiw1Mi45IE04MDIsNzUuNWMtMC40LTIuMi0wLjctNC40LTAuOS02LjdoMTEuNiBjMC4yLDIuMywwLjQsNC41LDAuOCw2LjdIODAyeiBNODE3LjgsNzUuNWMtMC40LTIuMi0wLjctNC41LTAuOS02LjdIODM2YzAuMSwyLjMsMC4zLDQuNSwwLjYsNi43SDgxNy44eiBNODQwLjcsNzUuNSBjLTAuMy0yLjItMC41LTQuNC0wLjYtNi43aDE4Ljl2Ni43SDg0MC43eiBNODYzLjMsNzUuNXYtNi43aDE4LjljLTAuMSwyLjMtMC4zLDQuNS0wLjYsNi43SDg2My4zeiBNODg1LjgsNzUuNSBjMC4zLTIuMiwwLjQtNC41LDAuNi02LjdoMTkuMWMtMC4yLDIuMy0wLjUsNC41LTAuOSw2LjdIODg1Ljh6IE05MjAuMyw3NS41aC0xMS41YzAuNC0yLjIsMC43LTQuNSwwLjgtNi43aDExLjYgQzkyMS4xLDcxLjEsOTIwLjcsNzMuMyw5MjAuMyw3NS41IE05MjEuMiw1OS42aC0xMS42Yy0wLjItMi4zLTAuNS00LjUtMC45LTYuN2gxMS42QzkyMC43LDU1LjEsOTIxLjEsNTcuMyw5MjEuMiw1OS42Jy8+PC9zdmc+"); }
+#title { width: 100%; min-height: 84px; margin: 0; background: #62701b; }
+#tree { flex: 0 1 auto; overflow: auto; float: left; width: 23%; padding: 5px 5px 0 5px; }
+#table { flex: 0 1 auto; overflow: auto; float: left; width: 50%; padding: 10px 5px 0 5px; }
+#text { flex: 0 1 auto; overflow: auto; float: right; width: 25%; padding: 10px 5px 0 5px; }
+#log { overflow: auto; height: 120px; padding: 4px; border: 0 solid #b2c7bf; border-top-width: 1px; }
+.tree-node { position: relative; margin-top: 5px; }
+.tree-child-leaves { display: block; margin-left: 20px; }
+.tree-expando { border-radius: 3px; cursor: pointer; float: left; position: relative; text-align: center; top: 1px; width: 10px; }
+.tree-noexpando { border-radius: 3px; float: left; height: 10px; line-height: 10px; position: relative; text-align: center; top: 5px; width: 10px; }
+.tree-expando:hover { background: #62701b; }
+.tree-node-text { cursor: pointer; float: left; margin-left: 5px; }
+.tree-node-text:hover { color: #62701b; }
+.tree-node-content { overflow-y: hidden; }
+.tree-node-content:before, .tree-node-content:after { content: " "; display: table; }
+.tree-node-content:after { clear: both; }
+.table { width: 100%; }
+.filter { width: 97%; padding-left: 5px; }
+.table tr:nth-child(odd) { background: #b2c7bf; }
+.table tr:nth-child(even) { background: #f2f7f2; }
+.text-heading { margin-top: 0; margin-bottom: 0; }
+.text-domain, .text-action { vertical-align: top; }
+.log-text { padding: 0; margin: 0; }
+.log-text-last { padding-bottom: 6px; }
+.selected { background-color: #62701b; color: white; }
+.error { color: red; }
+.hidden { display: none; }
+</style>
+</head>
+<body onload="refresh();">
+<section>
+<div id="logo"></div>
+<div id="title"><h1 class="title"><span class="breadcrumb">WEBXI \ </span>FRONT</h1></div>
+<div id="container">
+<div id="tree"></div>
+<div id="table"></div>
+<div id="text"></div>
+</div>
+<footer id="log"></footer>
+</section>
+<!-- file upload target to prevent page redirect -->
+<iframe name="hidden-iframe" style="display: none;"></iframe>
+<script>
+'use strict';
+(function () {
+	function forEach(arr, callback, scope) {
+		var i, len = arr.length;
+		for (i = 0; i < len; i += 1) {
+			callback.call(scope, arr[i], i);
+		}
+	}
+
+	function emit(instance, name, arg) {
+		if (instance.handlers[name]) {
+			forEach(instance.handlers[name], function (handle) {
+				window.setTimeout(function () {
+					handle.callback.call(handle.context, arg);
+				}, 0);
+			});
+		}
+	}
+
+	function getNode(nodes, url) {
+		var segments = url.substring(1).split('/');
+		var segment, node, arr = nodes, i = 0;
+		for (;;) {
+			segment = segments[i];
+			node = arr.find(function(element) {
+					return element.name === segment;
+		 	});
+			if (!node) {
+				return null;
+			} else if (i === segments.length - 1) {
+				return node;
+			}
+			i++;
+			arr = node.children;
+		}
+	}
+
+	function getStorageItem(key) {
+		var json;
+		if (typeof(Storage) === 'undefined') {
+			return null;
+		}
+		json = sessionStorage.getItem(key);
+		return JSON.parse(json);
+	}
+
+	function setStorageItem(key, value) {
+		var json;
+		if (typeof(Storage) === 'undefined') {
+			return;
+		}
+		json = JSON.stringify(value);
+		sessionStorage.setItem(key, json);
+	}
+
+	(function () { /* TreeView */
+		var storageItemKey = 'TreeView.UiState';
+
+		function render(self) {
+			var leaves = [];
+			var container = document.getElementById(self.containerId);
+			container.onscroll = function(e) {
+				if (self.uiState.scrollYPos !== e.target.scrollTop) {
+					self.uiState.scrollYPos = e.target.scrollTop;
+					setStorageItem(storageItemKey, self.uiState);
+				}
+			};
+			function renderLeaf(item) {
+				var children, childLeaf;
+				var leaf = document.createElement('div');
+				var content = document.createElement('div');
+				var text = document.createElement('div');
+				var expando = document.createElement('div');
+				leaf.setAttribute('class', 'tree-node');
+				content.setAttribute('class', 'tree-node-content');
+				content.setAttribute('node-url', item.url);
+				text.setAttribute('class', 'tree-node-text');
+				text.textContent = item.name + (item.value !== undefined ? (' = ' + item.value) : '');
+				item.expanded = self.uiState.expandedNodeUrls.find(function(url) {
+					return url === item.url;
+				}) !== undefined;
+				expando.textContent = item.expanded ? '-' : '+';
+				content.appendChild(expando);
+				content.appendChild(text);
+				leaf.appendChild(content);
+				if (item.children && item.children.length > 0) {
+					expando.classList.add('tree-expando');
+					children = document.createElement('div');
+					children.setAttribute('class', 'tree-child-leaves');
+					forEach(item.children, function (child) {
+						childLeaf = renderLeaf(child);
+						children.appendChild(childLeaf);
+					});
+					if (!item.expanded) {
+						children.classList.add('hidden');
+					}
+					leaf.appendChild(children);
+				} else {
+					expando.setAttribute('class', 'tree-noexpando ');
+					expando.textContent = ' ';
+				}
+				if (item.url === self.uiState.selectedNodeUrl) {
+					text.classList.add('selected');
+				}
+				return leaf;
+			}; /* renderLeaf */
+
+			forEach(self.allNodes, function (item) {
+				leaves.push(renderLeaf.call(self, item));
+			});
+
+			container.innerHTML = leaves.map(function (leaf) {
+				return leaf.outerHTML;
+			}).join('');
+
+			container.scrollTop = self.uiState.scrollYPos;
+
+			function clickExpando(e) {
+				var index;
+				var parent = (e.target || e.currentTarget).parentNode;
+				var url = parent.getAttribute('node-url');
+				var data = getNode(self.allNodes, url);
+				var leaves = parent.parentNode.querySelector('.tree-child-leaves');
+				var expando = parent.querySelector('.tree-expando');
+				if (leaves.classList.contains('hidden')) {
+					expando.textContent = '-';
+					leaves.classList.remove('hidden');
+					self.uiState.expandedNodeUrls.unshift(url);
+					setStorageItem(storageItemKey, self.uiState);
+					emit(self, 'expand', data);
+				} else {
+					expando.textContent = '+';
+					leaves.classList.add('hidden');
+					index = self.uiState.expandedNodeUrls.indexOf(url);
+					self.uiState.expandedNodeUrls.splice(index, 1);
+					setStorageItem(storageItemKey, self.uiState);
+					emit(self, 'collapse', data);
+				}
+			};
+
+			function clickText(e) {
+				var parent = (e.target || e.currentTarget).parentNode;
+				var url = parent.getAttribute('node-url');
+				var data = getNode(self.allNodes, url);
+				var nodes = container.querySelectorAll('.selected');
+				forEach(nodes, function (node) {
+					node.classList.remove('selected');
+				});
+				e.target.classList.add('selected');
+				self.uiState.selectedNodeUrl = url;
+				setStorageItem(storageItemKey, self.uiState);
+				emit(self, 'select', data);
+			};
+
+			forEach(container.querySelectorAll('.tree-node-text'), function (node) {
+				node.onclick = clickText;
+			});
+
+			forEach(container.querySelectorAll('.tree-expando'), function (node) {
+				node.onclick = clickExpando;
+			});
+		} /* render */
+
+		window.TreeView = function (containerId, webxi, allNodes) {
+			this.uiState = getStorageItem(storageItemKey);
+			if (this.uiState === null) {
+				this.uiState = {
+					scrollYPos: 0,
+					selectedNodeUrl: allNodes[0].url,
+					expandedNodeUrls: [ allNodes[0].url ]
+				};
+				setStorageItem(storageItemKey, this.uiState);
+			}
+			this.handlers = {};
+			this.webxi = webxi;
+			this.containerId = containerId;
+			this.allNodes = allNodes;
+			render(this);
+		}
+
+		TreeView.prototype.on = function (name, callback, scope) {
+			if (!this.handlers[name]) {
+				this.handlers[name] = [];
+			}
+			this.handlers[name].push({
+				callback: callback,
+				context: scope
+			});
+		};
+
+		TreeView.prototype.off = function (name, callback) {
+			var index, found = false;
+			if (this.handlers[name] instanceof Array) {
+				this.handlers[name].forEach(function (handle, i) {
+					index = i;
+					if (handle.callback === callback && !found) {
+						found = true;
+					}
+				});
+				if (found) {
+					this.handlers[name].splice(index, 1);
+				}
+			}
+		};
+	}()); /* TreeView */
+
+	(function () { /* TableView */
+		var storageItemKey = 'TableView.UiState';
+
+		function filter(e, container) {
+			var text = e.target.value;
+			var pattern, rows, name, show;
+			try {
+				pattern = new RegExp(text, 'i');
+			} catch(error) {
+				e.target.classList.add('error');
+				return;
+			}
+			e.target.classList.remove('error');
+			rows = container.querySelectorAll('.table-row');
+			forEach(rows, function (row) {
+				name = row.firstChild.textContent;
+				show = pattern.test(name);
+				if (show) {
+					row.classList.remove('hidden');
+				} else {
+					row.classList.add('hidden');
+				}
+			});
+		}
+
+		function render(self) {
+			var i, input, table, th, tr, text, filterInput;
+			var container = document.getElementById(self.containerId);
+			while (container.firstChild) {
+				container.removeChild(container.firstChild);
+			}
+			container.onscroll = function(e) {
+				if (self.uiState.scrollYPos !== e.target.scrollTop) {
+					self.uiState.scrollYPos = e.target.scrollTop;
+					setStorageItem(storageItemKey, self.uiState);
+				}
+			};
+			input = document.createElement('input');
+			input.setAttribute('type', 'text');
+			input.setAttribute('placeholder', 'Filter on node name, regex accepted');
+			input.classList.add('filter-input');
+			input.value = self.uiState.filterText;
+			input.onkeyup = function (e) {
+				self.uiState.filterText = e.target.value;
+				setStorageItem(storageItemKey, self.uiState);
+				filter(e, container);
+			};
+			input.classList.add('filter');
+			container.appendChild(input);
+			table = document.createElement('table');
+			table.classList.add('table');
+			tr = document.createElement('tr');
+			text = [ 'Subpath', 'Type', 'Value' ];
+			for (i = 0; i < text.length; i++) {
+				th = document.createElement('th');
+				th.textContent = text[i];
+				tr.appendChild(th);
+			}
+			table.appendChild(tr);
+			function renderRows(nodes, table) {
+				var i, j, a, tr, td, input, select, node, element, names, values;
+				var option, text, path, editable, hasValues, showList;
+				var subpathStartIndex = self.topNode.url.lastIndexOf('/') + 1;
+				for (i = 0; i < nodes.length; i++) {
+					tr = document.createElement('tr');
+					tr.classList.add('table-row');
+					node = nodes[i];
+					td = document.createElement('td');
+					path = node.path === '/' ? node.path + node.name : node.path + '/' + node.name;
+					td.textContent = path.substring(subpathStartIndex);
+					tr.appendChild(td);
+					td = document.createElement('td');
+					td.textContent = node.type || '';
+					tr.appendChild(td);
+					function addFileUpload(parent, node) {
+						var form, input1, input2;
+						form = document.createElement('form');
+						form.enctype = 'multipart/form-data';
+						form.action = node.url;
+						form.method = 'post';
+						form.target = 'hidden-iframe';
+						input1 = document.createElement('input');
+						input1.type = 'file';
+						input1.name = 'uploaded-file';
+						input1.id = 'uploaded-file';
+						form.appendChild(input1);
+						input2 = document.createElement('input');
+						input2.type = 'submit';
+						input2.value = 'Upload';
+						form.appendChild(input2);
+						parent.appendChild(form);
+					};
+					td = document.createElement('td');
+					if (node.value !== undefined) {
+						editable = !node.flags || (
+							node.flags.indexOf('ReadOnly') == -1 &&
+							node.flags.indexOf('File') == -1 &&
+							node.flags.indexOf('Directory') == -1);
+						if (editable) {
+							hasValues = (node.domain && node.domain.List);
+							showList = (hasValues || node.type === 'Boolean');
+							if (showList) {
+								select = document.createElement('select');
+								names = hasValues ? node.domain.List.Names : undefined;
+								values = hasValues ? node.domain.List.Values : [ false, true ];
+								forEach(values, function(value, i) {
+									option = document.createElement('option');
+									option.value = String(value);
+									text = (names !== undefined) ?
+										value + ': ' + names[i] : value;
+									option.textContent = String(text);
+									select.appendChild(option);
+								});
+								select.value = node.value;
+								select.setAttribute('class', 'table-select');
+								td.appendChild(select);
+							} else {
+								input = document.createElement('input');
+								input.setAttribute('type', 'text');
+								input.value = node.value;
+								input.setAttribute('class', 'table-value');
+								td.appendChild(input);
+							}
+						} else if (node.flags &&
+							node.flags.indexOf('Directory') >= 0 &&
+							node.flags.indexOf('ReadOnly') == -1) {
+							addFileUpload(td, node);
+						} else {
+							td.textContent = node.value;
+						}
+					} else if (node.flags) {
+						if (node.flags.indexOf('Directory') >= 0 &&
+							node.flags.indexOf('ReadOnly') == -1) {
+							addFileUpload(td, node);
+						} else if (node.flags.indexOf('File') >= 0 &&
+							node.flags.indexOf('WriteOnly') == -1) {
+							a = document.createElement('a');
+							a.setAttribute('href', node.url);
+							a.innerHTML = 'Download';
+							td.appendChild(a);
+						} 
+					}
+					tr.setAttribute('class', 'table-row');
+					tr.setAttribute('node-url', node.url);
+					tr.appendChild(td);
+					if (node.url === self.uiState.selectedRowUrl) {
+						element = tr.firstChild;
+						while (element) {
+							element.classList.add('selected');
+							element = element.nextElementSibling || element.nextSibling;
+						}
+					}
+					table.appendChild(tr);
+					if (node.children) {
+						renderRows(node.children, table)
+					}
+				}
+			};
+			renderRows([self.topNode], table);
+			container.appendChild(table);
+			container.scrollTop = self.uiState.scrollYPos;
+			filterInput = container.querySelector('.filter-input');
+			filterInput.onkeyup({target: filterInput});
+
+			function validateValue(webxi, node, element) {
+				var interval, list, values, value = webxi.getValue(node);
+				if (value === null) {
+					element.classList.add('error');
+					return;
+				}
+				if (node.domain) {
+					interval = node.domain.Interval;
+					if(interval) {
+						if (value < interval.Low || value > interval.High) {
+							element.classList.add('error');
+							return;
+						}
+					}
+					list = node.domain.List;
+					if (list) {
+						values = list.Values;
+						if (values.indexOf(value) == -1) {
+							element.classList.add('error');
+							return;
+						}
+					}
+				}
+				element.classList.remove('error');
+			}
+
+			function onkey(e) {
+				var node, nodes, data, url, parent = (e.target || e.currentTarget);
+				var valueText = parent.value;
+				var domElement = parent;
+				while ((url = parent.getAttribute('node-url')) === null) {
+					parent = parent.parentNode;
+				}
+				data = getNode(self.allNodes, url);
+				data.valueText = valueText;
+				if (e.keyCode === 13) {
+					emit(self, 'submit', data);
+				} else if (e.keyCode === 9) {
+					nodes = container.querySelectorAll('.selected');
+					if (nodes !== null) forEach(nodes, function (node) {
+						node.classList.remove('selected');
+					});
+					node = e.target.parentNode.parentNode.firstChild;
+					while (node) {
+						node.classList.add('selected');
+						node = node.nextElementSibling || node.nextSibling;
+					}
+					self.uiState.selectedRowUrl = url;
+					setStorageItem(storageItemKey, self.uiState);
+					emit(self, 'select', data);
+				} else {
+					validateValue(self.webxi, data, domElement);
+					emit(self, 'keyup', data);
+				}
+			};
+
+			function onclick(e) {
+				var node, data, url, parent = (e.target || e.currentTarget);
+				var nodes = container.querySelectorAll('.selected');
+				if (nodes !== null) forEach(nodes, function (node) {
+					node.classList.remove('selected');
+				});
+				node = this.firstChild;
+				while (node) {
+					node.classList.add('selected');
+    				node = node.nextElementSibling || node.nextSibling;
+				}
+				while ((url = parent.getAttribute('node-url')) === null) {
+					parent = parent.parentNode;
+				}
+				data = getNode(self.allNodes, url);
+				self.uiState.selectedRowUrl = url;
+				setStorageItem(storageItemKey, self.uiState);
+				emit(self, 'select', data);
+			};
+
+			function onchange(e) {
+				var url, data, parent = (e.target || e.currentTarget);
+				var valueText = parent.value;
+				var valueNew = parent.value;
+				while ((url = parent.getAttribute('node-url')) === null) {
+					parent = parent.parentNode;
+				}
+				data = getNode(self.allNodes, url);
+				data.valueText = valueText;
+				emit(self, 'submit', data);
+			};
+
+			forEach(container.querySelectorAll('.table-value'), function (node) {
+				node.onkeyup = onkey;
+				node.onsubmit = onkey;
+			});
+
+			forEach(container.querySelectorAll('.table-row'), function (node) {
+				node.onclick = onclick;
+			});
+
+			forEach(container.querySelectorAll('.table-select'), function (node) {
+				node.onchange = onchange;
+			});
+		} /* render */
+
+		window.TableView = function (containerId, webxi, allNodes, topNode) {
+			this.uiState = getStorageItem(storageItemKey);
+			if (this.uiState === null) {
+				this.uiState = {
+					scrollYPos: 0,
+					topNodeUrl: allNodes[0].url,
+					selectedRowUrl: allNodes[0].url,
+					filterText: ''
+				};
+			}
+			if (topNode) {
+				this.uiState.topNodeUrl = topNode.url;
+				this.uiState.selectedRowUrl = topNode.url;
+			}
+			setStorageItem(storageItemKey, this.uiState);
+			this.handlers = {};
+			this.topNode = getNode(allNodes, this.uiState.topNodeUrl);
+			this.containerId = containerId;
+			this.allNodes = allNodes;
+			this.webxi = webxi;
+			render(this);
+		}
+
+		TableView.prototype.on = function (name, callback, scope) {
+			if (!this.handlers[name]) {
+				this.handlers[name] = [];
+			}
+			this.handlers[name].push({
+				callback: callback,
+				context: scope
+			});
+		};
+
+		TableView.prototype.off = function (name, callback) {
+			var index, found = false;
+			if (this.handlers[name] instanceof Array) {
+				this.handlers[name].forEach(function (handle, i) {
+					index = i;
+					if (handle.callback === callback && !found) {
+						found = true;
+					}
+				});
+				if (found) {
+					this.handlers[name].splice(index, 1);
+				}
+			}
+		};
+	}()); /* TableView */
+
+	(function () { /* TextView */
+		var storageItemKey = 'TextView.UiState';
+
+		function render(self) {
+			var h, a, br, p1, p2, p3, table, tr, thr, th1, th2, th3, td1, td2, td3, textarea, button;
+			var i, node, webxi, domain, interval, list, values, names, haveNames, action, actions, lat, lon, mapsUrl;
+			var container = document.getElementById(self.containerId);
+			container.onscroll = function(e) {
+				if (self.uiState.scrollYPos !== e.target.scrollTop) {
+					self.uiState.scrollYPos = e.target.scrollTop;
+					setStorageItem(storageItemKey, self.uiState);
+				}
+			};
+			while (container.firstChild) {
+				container.removeChild(container.firstChild);
+			}
+			node = self.selectedNode;
+			webxi = self.webxi;
+			h = document.createElement('h1');
+			h.classList.add('text-heading');
+			h.textContent = node.name;
+			container.appendChild(h);
+			if (node.description) {
+				p1 = document.createElement('p');
+				p1.textContent = node.description;
+				container.appendChild(p1);
+			}
+			if (node.flags && node.flags.length > 0) {
+				p2 = document.createElement('p');
+				p2.textContent = 'Flags: ' + node.flags.join(', ');
+				container.appendChild(p2);
+			}
+			if (node.domain) {
+				domain = node.domain;
+				if (domain.Interval) {
+					interval = domain.Interval;
+					p3 = document.createElement('p');
+					p3.textContent = 'Domain: ' + interval.Low + ' - '
+						+ interval.High + ', step size ' + interval.StepSize;
+					container.appendChild(p3);
+				} else if (domain.List) {
+					list = domain.List;
+					values = list.Values;
+					names = list.Names;
+					haveNames = (names && names.length === values.length);
+					table = document.createElement('table');
+					thr = document.createElement('tr');
+					th1 = document.createElement('th');
+					th1.textContent = 'Value';
+					thr.appendChild(th1);
+					if (haveNames) {
+						th2 = document.createElement('th');
+						th2.textContent = 'Name';
+						thr.appendChild(th2);
+					}
+					table.appendChild(thr);
+					for (i = 0; i < values.length; i++) {
+						tr = document.createElement('tr');
+						td1 = document.createElement('td');
+						td1.textContent = values[i];
+						td1.classList.add('text-domain');
+						tr.appendChild(td1);
+						if (haveNames) {
+							td2 = document.createElement('td');
+							td2.textContent = names[i];
+							td2.classList.add('text-domain');
+							tr.appendChild(td2);
+						}
+						table.appendChild(tr);
+					}
+					container.appendChild(table);					
+				}
+			}
+			if (node.actions) {
+				table = document.createElement('table');
+				thr = document.createElement('tr');
+				th1 = document.createElement('th');
+				th1.textContent = 'Action';
+				th2 = document.createElement('th');
+				th2.textContent = 'Description';
+				th3 = document.createElement('th');
+				th3.textContent = 'Argument';
+				thr.appendChild(th1);
+				thr.appendChild(th2);
+				thr.appendChild(th3);
+				table.appendChild(thr);
+				actions = node.actions;
+				for (i = 0; i < actions.length; i++) {
+					action = actions[i];
+					tr = document.createElement('tr');
+					td1 = document.createElement('td');
+					button = document.createElement('input');
+					button.type = 'button';
+					button.value = action.Name;
+					button.onclick = function(event) {
+						var arg = document.getElementById('action-argument');
+						webxi.action(node.url, event.target.value, arg.value);
+					};
+					td1.classList.add('text-action');
+					td1.appendChild(button);
+					td2 = document.createElement('td');
+					td2.textContent = action.Description;
+					td2.classList.add('text-action');
+					td3 = document.createElement('td');
+					td3.textContent = action.Argument || '';
+					td3.classList.add('text-action');
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					table.appendChild(tr);
+				}
+				container.appendChild(table);					
+				textarea = document.createElement('textarea');
+				textarea.maxLength = '1000';
+				textarea.cols = '40';
+				textarea.rows = '4';
+				textarea.setAttribute('id', 'action-argument');
+				container.appendChild(textarea);
+			}
+			if (node.url === '/WebXi/Device/GPS') {
+				lat = node.children.find(function(c) { return c.name === 'Latitude'; });
+				lon = node.children.find(function(c) { return c.name === 'Longitude'; });
+				if (lat && lat.value !== 0.0 && lon && lon.value !== 0.0) {
+					a = document.createElement('a');
+					mapsUrl = 'https://www.google.com/maps/place/' +
+						lat.value + '+' + lon.value + '/@' +
+						lat.value + ',' + lon.value + ',12z';
+					a.setAttribute('href', mapsUrl);
+					a.innerHTML = 'Open in Google Maps';
+					container.appendChild(a);
+				}
+			}
+			container.scrollTop = self.uiState.scrollYPos;
+		} /* render */
+
+		window.TextView = function (containerId, webxi, allNodes, selectedNode) {
+			if (!selectedNode) {
+				this.uiState = getStorageItem(storageItemKey);
+				if (this.uiState === null) {
+					this.uiState = {
+						scrollYPos: 0,
+						selectedNodeUrl: allNodes[0].url,
+					};
+				}
+				this.selectedNode = getNode(allNodes, this.uiState.selectedNodeUrl);
+			} else {
+				this.uiState = {
+					selectedNodeUrl: selectedNode.url,
+				};
+				this.selectedNode = selectedNode;
+			}
+			setStorageItem(storageItemKey, this.uiState);
+			this.containerId = containerId;
+			this.allNodes = allNodes;
+			this.webxi = webxi;
+			render(this);
+		}
+	}()); /* TextView */
+
+	(function () { /* WebXi */
+		function log(message, error) {
+			var container, p;
+			var now = new Date();
+			var time = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
+			time = time.slice(0, 10) + ' ' + time.slice(11, time.length - 1);
+			time = time.substring(0, time.lastIndexOf('.'));
+			container = document.getElementById('log');
+			p = document.createElement('p');
+			p.textContent = time + ':\u00a0\u00a0' + message;
+			if (error) {
+				p.className += ' error';
+			}
+			p.classList.add('log-text');
+			p.classList.add('log-text-last');
+			if (container.lastChild !== null) {
+				container.lastChild.classList.remove('log-text-last');
+			}
+			container.appendChild(p);
+			container.scrollTop = container.scrollHeight;
+		}
+
+		function request(method, path, body, func) {
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = function () {
+				var response = null, contentType, respText, bodyText, error, message;
+				if (this.readyState === 4) {
+					error = this.status >= 400;
+					respText = (req.responseText.length > 50) ?
+						req.responseText.substring(0, 50) + '...' : req.responseText;
+					bodyText = (body === null) ? '' :
+						' ' + (body.length > 50 ? body.substring(0, 50) + '...' : body);
+					message = this.status + ' \u2190 ' + method + ' ' + path +
+						bodyText + ' (' + req.responseText.length + ' response bytes)' +
+						(error ? ' ' + respText : '');
+					log(message, error);
+					if (req.responseText.length > 0) {
+						contentType = req.getResponseHeader('Content-Type');
+						response = ((contentType === 'application/json') ?
+							JSON.parse(req.responseText) : req.responseText);
+						if (func) {
+							func(response);
+						}
+					}
+				}
+			};
+			req.open(method, path, true);
+			req.setRequestHeader('X-WebXi-Version', '1.0');
+			req.setRequestHeader('X-Requested-With', 'WebXi Front');
+			req.send(body);
+		}
+
+		function buildData(json, path, allNodes, dirNodes) {
+			var url, metaData, node, name;
+			for (name in json) {
+				if (!json.hasOwnProperty(name)) {
+					continue;
+				}
+				if (name === 'Metadata') {
+					continue;
+				}
+				url = (path === '/') ? path + name : path + '/' + name;
+				metaData = json[name].Metadata || {};
+				node = {
+					name: name,
+					path: path,
+					url: url,
+					value: metaData.Value,
+					type: metaData.DataType,
+					actions: metaData.Actions,
+					flags: metaData.Flags === undefined ?
+						metaData.Flags : metaData.Flags.split(','),
+					domain: metaData.Domain,
+					description: metaData.Description
+				};
+				allNodes.push(node);
+				if (node.flags &&
+					node.flags.indexOf('Directory') >= 0 &&
+					node.flags.indexOf('RecursionExcluded') >= 0) {
+					dirNodes.push(node);
+				}
+				if (typeof(json[name]) === 'object') {
+					node.children = [];
+					buildData(json[name], url, node.children, dirNodes);
+				}
+			}
+			allNodes.sort(function(lhs, rhs) {
+				return lhs.name.localeCompare(rhs.name);
+			});
+		}
+
+		window.WebXi = function () {
+		}
+
+		WebXi.prototype.refresh = function (callback) {
+			request('GET', '/WebXi?Recursive=true&Metadata=All,Value', null, function (jsonResponse) {
+				var allNodes = [], dirNodes = [], i, f, func, funcs = [];
+				jsonResponse = { 'WebXi': jsonResponse };
+				buildData(jsonResponse, '/', allNodes, dirNodes);
+				if (dirNodes.length === 0) {
+					callback(allNodes);
+					return;
+				}
+				func = function(dirNode, funcs, i) {
+					request('GET', dirNode.url + '?Metadata=All,Value', null, function (jsonResponse) {
+						dirNode.children = [];
+						buildData(jsonResponse, dirNode.url, dirNode.children, []);
+						if (++i < funcs.length) {
+							funcs[i]();
+						} else {
+							callback(allNodes);
+						}
+					});
+				};
+				for (i = 0; i < dirNodes.length; i++) {
+					f = func.bind(this, dirNodes[i], funcs, i);
+					funcs.push(f);
+				}
+				funcs[0]();
+			});
+		}
+
+		WebXi.prototype.get = function (url, callback) {
+			request('GET', url, null, function(response) {
+				callback(response);
+			});
+		}
+
+		WebXi.prototype.put = function (url, value) {
+			request('PUT', url, JSON.stringify(value));
+		}
+
+		WebXi.prototype.action = function (url, name, arg) {
+			request('PUT', url + '?Action=' + name + 
+				(arg ? '&Argument=' + arg : ''), null);
+		}
+
+		WebXi.prototype.getValue = function (node) {
+			switch(node.type) {
+				case 'String':
+					return node.valueText;
+				case 'Boolean':
+					return (node.valueText === 'true' ||
+						node.valueText === 'false') ?
+						node.valueText === 'true' : null;
+				case 'Int8':
+				case 'Uint8':
+				case 'Int16':
+				case 'Uint16':
+				case 'Int32':
+				case 'Uint32':
+				case 'Int64':
+				case 'Uint64':
+					return (!isNaN(node.valueText) && 
+						parseInt(Number(node.valueText)) == node.valueText && 
+						!isNaN(parseInt(node.valueText, 10))) ?
+						Number(node.valueText) : null;
+				case 'Float32':
+				case 'Float64':
+					return (!isNaN(parseFloat(node.valueText)) &&
+						isFinite(parseFloat(node.valueText))) ?
+						Number(node.valueText) : null;
+				default:
+					return null;
+			}
+		}
+	}()); /* WebXi */
+
+	function updateText(webxi, allNodes, selectedNode) {
+		new TextView('text', webxi, allNodes, selectedNode);
+	}
+
+	function updateTable(webxi, allNodes, selectedNode) {
+		var table = new TableView('table', webxi, allNodes, selectedNode);
+		table.on('submit', function (node) {
+			var newValue = webxi.getValue(node);
+			if (newValue !== null) {
+				webxi.put(node.url, newValue);
+			}
+		});
+		table.on('select', function (selectedNode) {
+			updateText(webxi, allNodes, selectedNode);
+		});
+		updateText(webxi, allNodes, selectedNode);
+	}
+
+	function updateTree(webxi, allNodes) {
+		var tree = new TreeView('tree', webxi, allNodes);
+		updateTable(webxi, allNodes);
+		tree.on('select', function (selectedNode) {
+			updateTable(webxi, allNodes, selectedNode);
+		});
+	}
+
+	window.refresh = function() {
+		var webxi = new WebXi();
+		webxi.refresh(function (allNodes) {
+			updateTree(webxi, allNodes);
+		});
+	}
+}());
+</script>
+</body>
+</html>

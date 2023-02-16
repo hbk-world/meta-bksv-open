@@ -1,0 +1,21 @@
+From dc773f81018055fb02d9b62a6246e684dde437da Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Wed, 8 Aug 2018 10:39:47 +0800
+Subject: [PATCH] Start gpsd before application
+
+---
+ systemd/gpsd.service | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/systemd/gpsd.service b/systemd/gpsd.service
+index 918ac48..b0f903e 100644
+--- a/systemd/gpsd.service
++++ b/systemd/gpsd.service
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=GPS (Global Positioning System) Daemon
+ Requires=gpsd.socket
++Before=xserver-nodm.service
+ 
+ [Service]
+ Type=forking

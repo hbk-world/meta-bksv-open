@@ -1,0 +1,2 @@
+BK_2255 &
+exec matchbox-window-manager -use_titlebar no -use_cursor yes

@@ -1,0 +1,25 @@
+From 23d55884a3f1bfd51e5de627e614f954ed90648d Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Tue, 19 Feb 2019 11:44:32 +0800
+Subject: [PATCH] Disable VHT
+
+---
+ net/mac80211/mlme.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 2d23560..c16b7ae 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -4854,6 +4854,11 @@ int ieee80211_mgd_assoc(struct ieee80211_sub_if_data *sdata,
+ 				    "disabling VHT as WMM/QoS is not supported by the AP\n");
+ 	}
+ 
++	if (!(ifmgd->flags & IEEE80211_STA_DISABLE_VHT)) {
++		ifmgd->flags |= IEEE80211_STA_DISABLE_VHT;
++		netdev_info(sdata->dev, "BKSV: disabling VHT\n");
++	}
++
+ 	memcpy(&ifmgd->ht_capa, &req->ht_capa, sizeof(ifmgd->ht_capa));
+ 	memcpy(&ifmgd->ht_capa_mask, &req->ht_capa_mask,
+ 	       sizeof(ifmgd->ht_capa_mask));

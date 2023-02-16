@@ -1,0 +1,22 @@
+From ea5eb70e6ce1fbdbfc2ab3245b7d7e00684d27c7 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Fri, 15 Mar 2019 16:57:57 +0800
+Subject: [PATCH] Fix segfault when txt-record value has zero length
+
+---
+ avahi-daemon/static-services.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/avahi-daemon/static-services.c b/avahi-daemon/static-services.c
+index fc94ede..bb7a079 100644
+--- a/avahi-daemon/static-services.c
++++ b/avahi-daemon/static-services.c
+@@ -751,6 +751,8 @@ static void XMLCALL xml_cdata(void *data, const XML_Char *s, int len) {
+             }
+             if (len > 0)
+                 u->buf = append_cdata(u->buf, s, len);
++            else
++                u->buf = avahi_strndup("", 0);
+             break;
+ 
+         case XML_TAG_SERVICE_GROUP:

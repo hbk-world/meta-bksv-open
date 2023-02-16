@@ -1,0 +1,15 @@
+[Unit]
+Description=Post-Update Routine
+DefaultDependencies=no
+Conflicts=shutdown.target
+After=systemd-remount-fs.service
+Before=systemd-sysusers.service sysinit.target shutdown.target
+ConditionPathIsReadWrite=/var
+ConditionPathExists=!/var/post_update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/post_update.sh
+
+[Install]
+WantedBy=sysinit.target

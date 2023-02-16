@@ -1,0 +1,22 @@
+From 55673c0a2c7f0f6ec8c2bce0af75d638532d2bc5 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Wed, 29 Jan 2020 12:34:53 +0800
+Subject: [PATCH] Avoid printing message on error level
+
+---
+ drivers/bluetooth/btmrvl_sdio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/bluetooth/btmrvl_sdio.c b/drivers/bluetooth/btmrvl_sdio.c
+index 5e1d040..524ddad 100644
+--- a/drivers/bluetooth/btmrvl_sdio.c
++++ b/drivers/bluetooth/btmrvl_sdio.c
+@@ -89,7 +89,7 @@ static int btmrvl_sdio_probe_of(struct device *dev,
+ 
+ 	if (!dev_of_node(dev) ||
+ 	    !of_match_node(btmrvl_sdio_of_match_table, dev_of_node(dev))) {
+-		pr_err("sdio platform data not available\n");
++		dev_warn(dev, "sdio platform data not available\n");
+ 		return -1;
+ 	}
+ 

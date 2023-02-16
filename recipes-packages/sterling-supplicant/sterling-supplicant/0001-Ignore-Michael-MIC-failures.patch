@@ -1,0 +1,23 @@
+From 7ebe2435b77fcd8f073c30791e1ccfe7ceb18ef5 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@hbkworld.com>
+Date: Fri, 13 Aug 2021 08:47:00 +0800
+Subject: [PATCH] Ignore Michael MIC failures
+
+Signed-off-by: Carsten Hansen <Carsten.Hansen@hbkworld.com>
+---
+ wpa_supplicant/events.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/wpa_supplicant/events.c b/wpa_supplicant/events.c
+index abe3b47..babfe7c 100644
+--- a/wpa_supplicant/events.c
++++ b/wpa_supplicant/events.c
+@@ -3503,7 +3503,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
+ 				  data ? &data->deauth_info : NULL);
+ 		break;
+ 	case EVENT_MICHAEL_MIC_FAILURE:
+-		wpa_supplicant_event_michael_mic_failure(wpa_s, data);
++		wpa_msg(wpa_s, MSG_WARNING, "Michael MIC failure ignored");
+ 		break;
+ #ifndef CONFIG_NO_SCAN_PROCESSING
+ 	case EVENT_SCAN_STARTED:

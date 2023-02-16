@@ -1,0 +1,25 @@
+From a0dcb1100f0edeb7d59118f8ce0d46292ff5340f Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Wed, 20 Feb 2019 15:07:33 +0100
+
+---
+ giblib-config.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/giblib-config.in b/giblib-config.in
+index f3a7db6..4f4d6bf 100644
+--- a/giblib-config.in
++++ b/giblib-config.in
+@@ -42,10 +42,10 @@ while test $# -gt 0; do
+       if test @includedir@ != /usr/include ; then
+         includes=-I@includedir@
+       fi
+-      echo $includes -I$prefix/include/giblib @IMLIB_CFLAGS@
++      echo @IMLIB_CFLAGS@
+       ;;
+     --libs)
+-      libdirs=-L@libdir@
++      libdirs=
+       echo $libdirs -lgiblib @LDFLAGS@ @IMLIB_LIBS@
+       ;;
+     *)

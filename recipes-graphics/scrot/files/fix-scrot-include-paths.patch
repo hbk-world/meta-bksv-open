@@ -1,0 +1,91 @@
+From 248b9608c1e24add8932822bf2d7605c894ec7f5 Mon Sep 17 00:00:00 2001
+From: Troels Dalsgaard Hoffmeyer <Troels.Hoffmeyer@bksv.com>
+Date: Wed, 20 Feb 2019 15:07:33 +0100
+
+---
+ Makefile.am     | 5 ++---
+ Makefile.in     | 6 +++---
+ src/Makefile.am | 5 ++---
+ src/Makefile.in | 6 +++---
+ 4 files changed, 10 insertions(+), 12 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 10d27d3..72aae2a 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -5,9 +5,8 @@ AUTOMAKE_OPTIONS = 1.4 foreign
+ # A list of all the files in the current directory which can be regenerated
+ MAINTAINERCLEANFILES = Makefile.in scrot.spec
+ 
+-LDFLAGS           = -L/usr/X11R6/lib -L/usr/lib -L/usr/local/lib
+-INCLUDES          = -I/usr/X11R6/include \
+-$(X_CFLAGS) -I$(prefix)/include -I$(includedir) -I.
++LDFLAGS           = 
++INCLUDES          = $(X_CFLAGS) -I.
+ 
+ man_MANS = scrot.1
+ 
+diff --git a/Makefile.in b/Makefile.in
+index ffab834..8f7df3d 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -30,7 +30,7 @@ libdir = @libdir@
+ infodir = @infodir@
+ mandir = @mandir@
+ includedir = @includedir@
+-oldincludedir = /usr/include
++oldincludedir = 
+ 
+ DESTDIR =
+ 
+@@ -75,8 +75,8 @@ AUTOMAKE_OPTIONS = 1.4 foreign
+ # A list of all the files in the current directory which can be regenerated
+ MAINTAINERCLEANFILES = Makefile.in scrot.spec
+ 
+-LDFLAGS = -L/usr/X11R6/lib -L/usr/lib -L/usr/local/lib
+-INCLUDES = -I/usr/X11R6/include $(X_CFLAGS) -I$(prefix)/include -I$(includedir) -I.
++LDFLAGS = 
++INCLUDES = $(X_CFLAGS) -I.
+ 
+ 
+ man_MANS = scrot.1
+diff --git a/src/Makefile.am b/src/Makefile.am
+index ebd54b0..486a54a 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -1,9 +1,8 @@
+ # A list of all the files in the current directory which can be regenerated
+ MAINTAINERCLEANFILES = Makefile.in				
+ 
+-LDFLAGS           = -L/usr/X11R6/lib
+-INCLUDES          = -g -O3 -Wall -I/usr/X11R6/include \
+-$(X_CFLAGS) -I$(prefix)/include -I$(includedir) -I. \
++LDFLAGS           = 
++INCLUDES          = -g -O3 -Wall $(X_CFLAGS) -I. \
+ -DPREFIX=\""$(prefix)"\" @GIBLIB_CFLAGS@
+ LIBOBJS = @LIBOBJS@
+ 
+diff --git a/src/Makefile.in b/src/Makefile.in
+index d424a63..0b8e58c 100644
+--- a/src/Makefile.in
++++ b/src/Makefile.in
+@@ -32,7 +32,7 @@ libdir = @libdir@
+ infodir = @infodir@
+ mandir = @mandir@
+ includedir = @includedir@
+-oldincludedir = /usr/include
++oldincludedir = 
+ 
+ DESTDIR =
+ 
+@@ -73,8 +73,8 @@ VERSION = @VERSION@
+ 
+ MAINTAINERCLEANFILES = Makefile.in				
+ 
+-LDFLAGS = -L/usr/X11R6/lib
+-INCLUDES = -g -O3 -Wall -I/usr/X11R6/include $(X_CFLAGS) -I$(prefix)/include -I$(includedir) -I. -DPREFIX=\""$(prefix)"\" @GIBLIB_CFLAGS@
++LDFLAGS = 
++INCLUDES = -g -O3 -Wall $(X_CFLAGS) -I. -DPREFIX=\""$(prefix)"\" @GIBLIB_CFLAGS@
+ 
+ LIBOBJS = @LIBOBJS@
+ 

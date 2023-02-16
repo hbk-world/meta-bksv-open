@@ -1,0 +1,36 @@
+From 686c684a40572992d3b6d40fd6817de9e8654858 Mon Sep 17 00:00:00 2001
+From: Lars Erling Thestrup <LarsErling.Thestrup@bksv.com>
+Date: Thu, 7 Jun 2018 12:03:36 +0200
+Subject: [PATCH] added pre_gpsd and post_gpsd commands
+
+---
+ systemd/gpsd.service | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/systemd/gpsd.service b/systemd/gpsd.service
+index 2707ff9..8ae9417 100644
+--- a/systemd/gpsd.service
++++ b/systemd/gpsd.service
+@@ -1,14 +1,17 @@
+ [Unit]
+ Description=GPS (Global Positioning System) Daemon
+ Requires=gpsd.socket
+-# Needed with chrony SOCK refclock
+-After=chronyd.service
+ 
+ [Service]
+ Type=forking
+-EnvironmentFile=-/etc/default/gpsd
+-EnvironmentFile=-/etc/sysconfig/gpsd
+-ExecStart=/usr/sbin/gpsd $GPSD_OPTIONS $OPTIONS $DEVICES
++EnvironmentFile=/etc/default/gpsd
++PIDFile=/run/gpsd.pid
++ExecStartPre=/usr/bin/bkgps pre
++ExecStart=/usr/sbin/gpsd -P /run/gpsd.pid $GPSD_OPTIONS $GPS_DEVICES
++ExecStartPost=/bin/sleep 0.1
++ExecStopPost=/usr/bin/bkgps post
++StandardOutput=syslog
++Restart=always
+ 
+ [Install]
+ WantedBy=multi-user.target

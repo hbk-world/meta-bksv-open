@@ -1,0 +1,22 @@
+From 687ba17aba849aac57728480b0e9a3113e77f75f Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Wed, 24 Jul 2019 12:08:12 +0800
+Subject: [PATCH] Select ipv6 addr-gen-mode eui64 by default
+
+---
+ libnm-core/nm-setting-ip6-config.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libnm-core/nm-setting-ip6-config.c b/libnm-core/nm-setting-ip6-config.c
+index d6c085a..7630453 100644
+--- a/libnm-core/nm-setting-ip6-config.c
++++ b/libnm-core/nm-setting-ip6-config.c
+@@ -805,7 +805,7 @@ nm_setting_ip6_config_class_init (NMSettingIP6ConfigClass *klass)
+ 	obj_properties[PROP_ADDR_GEN_MODE] =
+ 	    g_param_spec_int (NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE, "", "",
+ 	                      G_MININT, G_MAXINT,
+-	                      NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY,
++	                      NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64,
+ 	                      G_PARAM_READWRITE |
+ 	                      G_PARAM_CONSTRUCT |
+ 	                      G_PARAM_STATIC_STRINGS);

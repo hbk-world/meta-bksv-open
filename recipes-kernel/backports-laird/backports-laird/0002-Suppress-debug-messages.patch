@@ -1,0 +1,32 @@
+From 7459d6ac86309a7f67159eb9bb5c027c3ba472ef Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 7 Jan 2019 16:37:20 +0800
+Subject: [PATCH] Suppress-debug-messages
+
+---
+ drivers/net/wireless/laird/lrdmwl/mac80211.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/wireless/laird/lrdmwl/mac80211.c b/drivers/net/wireless/laird/lrdmwl/mac80211.c
+index b40df7e..4c096a2 100644
+--- a/drivers/net/wireless/laird/lrdmwl/mac80211.c
++++ b/drivers/net/wireless/laird/lrdmwl/mac80211.c
+@@ -377,12 +377,12 @@ static void mwl_rc_update_work(struct work_struct *work)
+ 	struct ieee80211_hw *hw = priv->hw;
+ 	u8 smps_mode;
+ 
+-	wiphy_err(hw->wiphy, "%s() new smps_mode=%d\n",
+-			__FUNCTION__, sta->smps_mode);
+-	wiphy_err(hw->wiphy, "mac: %x:%x:%x:%x:%x:%x\n",
+-			sta->addr[0], sta->addr[1],
+-			sta->addr[2], sta->addr[3],
+-			sta->addr[4], sta->addr[5]);
++	// wiphy_err(hw->wiphy, "%s() new smps_mode=%d\n",
++	// 		__FUNCTION__, sta->smps_mode);
++	// wiphy_err(hw->wiphy, "mac: %x:%x:%x:%x:%x:%x\n",
++	// 		sta->addr[0], sta->addr[1],
++	// 		sta->addr[2], sta->addr[3],
++	// 		sta->addr[4], sta->addr[5]);
+ 
+ 	if ((sta->smps_mode == IEEE80211_SMPS_AUTOMATIC) ||
+ 		(sta->smps_mode == IEEE80211_SMPS_OFF)){

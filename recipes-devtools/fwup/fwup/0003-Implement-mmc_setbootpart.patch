@@ -1,0 +1,96 @@
+From 790499e981e209ff1f432903353e3cf907895688 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 21 Jan 2019 17:58:00 +0800
+Subject: [PATCH] Implement mmc_setbootpart
+
+---
+ README.md       |  1 +
+ src/cfgfile.c   |  3 ++-
+ src/functions.c | 37 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 976acf0..1cd4ff7 100644
+--- a/README.md
++++ b/README.md
+@@ -566,6 +566,7 @@ uboot_recover(my_uboot_env)             | 0.15.0 | If the U-Boot environment is
+ uboot_clearenv(my_uboot_env)            | 0.10.0 | Initialize a clean, variable free U-boot environment
+ uboot_setenv(my_uboot_env, name, value) | 0.10.0 | Set the specified U-boot variable
+ uboot_unsetenv(my_uboot_env, name)      | 0.10.0 | Unset the specified U-boot variable
++mmc_setbootpart(partition)              | 0.17.0 | Mark the specified eMMC boot partition as active in the extcsd record. The `partition` number must be 1 or 2
+ mmc_writebootpart(partition, offset)    | 0.17.0 | Write a resource to the specified eMMC boot partition. The `offset` is specified as a number of 512-byte blocks, and the `partition` number must be 1 or 2. The boot partition will be left write-protected
+ 
+ ## Sparse files
+diff --git a/src/cfgfile.c b/src/cfgfile.c
+index ec91dc3..79ae653 100644
+--- a/src/cfgfile.c
++++ b/src/cfgfile.c
+@@ -495,7 +495,8 @@ static cfg_opt_t uboot_environment_opts[] = {
+     CFG_FUNC("path_write", CB), \
+     CFG_FUNC("pipe_write", CB), \
+     CFG_FUNC("execute", CB), \
+-    CFG_FUNC("mmc_writebootpart", CB)
++    CFG_FUNC("mmc_writebootpart", CB), \
++    CFG_FUNC("mmc_setbootpart", CB)
+ 
+ static cfg_opt_t task_on_init_opts[] = {
+     CFG_ON_EVENT_FUNCTIONS(cb_on_init_func),
+diff --git a/src/functions.c b/src/functions.c
+index c49dab3..ec102bf 100644
+--- a/src/functions.c
++++ b/src/functions.c
+@@ -65,6 +65,7 @@ DECLARE_FUN(path_write);
+ DECLARE_FUN(pipe_write);
+ DECLARE_FUN(execute);
+ DECLARE_FUN(mmc_writebootpart);
++DECLARE_FUN(mmc_setbootpart);
+ 
+ struct fun_info {
+     const char *name;
+@@ -101,6 +102,7 @@ static struct fun_info fun_table[] = {
+     FUN_INFO(pipe_write),
+     FUN_INFO(execute),
+     FUN_INFO(mmc_writebootpart),
++    FUN_INFO(mmc_setbootpart),
+ };
+ 
+ static struct fun_info *lookup(int argc, const char **argv)
+@@ -1280,3 +1282,38 @@ cleanup:
+ 
+     return rc;
+ }
++
++int mmc_setbootpart_validate(struct fun_context *fctx)
++{
++    if (fctx->argc != 2)
++        ERR_RETURN("mmc_setbootpart requires a boot partition number");
++
++    int partition = strtol(fctx->argv[1], NULL, 0);
++    if (partition < 1 || partition > 2)
++        ERR_RETURN("mmc_setbootpart requires the boot partition number to be 1 or 2");
++
++    return 0;
++}
++int mmc_setbootpart_compute_progress(struct fun_context *fctx)
++{
++    fctx->progress->total_units += FWUP_BLOCK_SIZE; // Arbitrarily count as 1 block
++    return 0;
++}
++int mmc_setbootpart_run(struct fun_context *fctx)
++{
++    assert(fctx->on_event);
++
++    int partition = strtol(fctx->argv[1], NULL, 0);
++
++    char cmd[64];
++    snprintf(cmd, sizeof(cmd), "mmc bootpart enable %d 1 %s", partition, fctx->mmc_device_path);
++
++    int status = system(cmd);
++    if (status < 0)
++        ERR_RETURN("mmc_setbootpart couldn't run '%s'", cmd);
++    if (status != 0)
++        ERR_RETURN("'%s' failed with exit status %d", cmd, status);
++
++    progress_report(fctx->progress, FWUP_BLOCK_SIZE);
++    return 0;
++}

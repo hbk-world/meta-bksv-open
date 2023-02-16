@@ -1,0 +1,9 @@
+[Unit]
+After=bluetooth.service
+PartOf=bluetooth.service
+
+[Service]
+ExecStart=/usr/bin/br.sh
+
+[Install]
+WantedBy=bluetooth.target

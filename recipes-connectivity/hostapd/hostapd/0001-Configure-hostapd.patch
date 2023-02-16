@@ -1,0 +1,94 @@
+From 87a2c107fff1d338695ee7fac54d4e6a5accc842 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Wed, 24 Jul 2019 15:41:01 +0800
+Subject: [PATCH] Configure hostapd
+
+---
+ hostapd/hostapd.conf | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/hostapd/hostapd.conf b/hostapd/hostapd.conf
+index f8caa56..9ec840b 100644
+--- a/hostapd/hostapd.conf
++++ b/hostapd/hostapd.conf
+@@ -162,7 +162,7 @@ hw_mode=g
+ # If CONFIG_ACS build option is enabled, the channel can be selected
+ # automatically at run time by setting channel=acs_survey or channel=0, both of
+ # which will enable the ACS survey based algorithm.
+-channel=1
++channel=6
+ 
+ # ACS tuning - Automatic Channel Selection
+ # See: http://wireless.kernel.org/en/users/Documentation/acs
+@@ -294,7 +294,7 @@ macaddr_acl=0
+ # Bit fields of allowed authentication algorithms:
+ # bit 0 = Open System Authentication
+ # bit 1 = Shared Key Authentication (requires WEP)
+-auth_algs=3
++auth_algs=1
+ 
+ # Send empty SSID in beacons and ignore probe request frames that do not
+ # specify full SSID, i.e., require stations to know SSID.
+@@ -557,7 +557,7 @@ wmm_ac_vo_acm=0
+ # 1 = enabled
+ # Note: You will also need to enable WMM for full HT functionality.
+ # Note: hw_mode=g (2.4 GHz) and hw_mode=a (5 GHz) is used to specify the band.
+-#ieee80211n=1
++ieee80211n=1
+ 
+ # ht_capab: HT capabilities (list of flags)
+ # LDPC coding capability: [LDPC] = supported
+@@ -592,7 +592,7 @@ wmm_ac_vo_acm=0
+ # DSSS/CCK Mode in 40 MHz: [DSSS_CCK-40] = allowed (not allowed if not set)
+ # 40 MHz intolerant [40-INTOLERANT] (not advertised if not set)
+ # L-SIG TXOP protection support: [LSIG-TXOP-PROT] (disabled if not set)
+-#ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]
++ht_capab=[SHORT-GI-20]
+ 
+ # Require stations to support HT PHY (reject association if they do not)
+ #require_ht=1
+@@ -611,7 +611,7 @@ wmm_ac_vo_acm=0
+ # 1 = enabled
+ # Note: You will also need to enable WMM for full VHT functionality.
+ # Note: hw_mode=a is used to specify that 5 GHz band is used with VHT.
+-#ieee80211ac=1
++ieee80211ac=0
+ 
+ # vht_capab: VHT capabilities (list of flags)
+ #
+@@ -828,7 +828,7 @@ wmm_ac_vo_acm=0
+ ##### IEEE 802.1X-2004 related configuration ##################################
+ 
+ # Require IEEE 802.1X authorization
+-#ieee8021x=1
++ieee8021x=0
+ 
+ # IEEE 802.1X/EAPOL version
+ # hostapd is implemented based on IEEE Std 802.1X-2004 which defines EAPOL
+@@ -1354,7 +1354,7 @@ own_ip_addr=127.0.0.1
+ # Note that WPA3 is also configured with bit1 since it uses RSN just like WPA2.
+ # In other words, for WPA3, wpa=2 is used the configuration (and
+ # wpa_key_mgmt=SAE for WPA3-Personal instead of wpa_key_mgmt=WPA-PSK).
+-#wpa=2
++wpa=2
+ 
+ # WPA pre-shared keys for WPA-PSK. This can be either entered as a 256-bit
+ # secret in hex format (64 hex digits), wpa_psk, or as an ASCII passphrase
+@@ -1401,7 +1401,7 @@ own_ip_addr=127.0.0.1
+ # DPP = Device Provisioning Protocol
+ # OSEN = Hotspot 2.0 online signup with encryption
+ # (dot11RSNAConfigAuthenticationSuitesTable)
+-#wpa_key_mgmt=WPA-PSK WPA-EAP
++wpa_key_mgmt=WPA-PSK
+ 
+ # Set of accepted cipher suites (encryption algorithms) for pairwise keys
+ # (unicast packets). This is a space separated list of algorithms:
+@@ -1418,7 +1418,7 @@ own_ip_addr=127.0.0.1
+ #
+ # (dot11RSNAConfigPairwiseCiphersTable)
+ # Pairwise cipher for WPA (v1) (default: TKIP)
+-#wpa_pairwise=TKIP CCMP
++wpa_pairwise=CCMP
+ # Pairwise cipher for RSN/WPA2 (default: use wpa_pairwise value)
+ #rsn_pairwise=CCMP
+ 

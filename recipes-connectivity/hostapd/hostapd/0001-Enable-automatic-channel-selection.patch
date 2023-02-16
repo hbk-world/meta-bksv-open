@@ -1,0 +1,31 @@
+From fcd8fa0281e54a063c23d12558d7a828ea2e202c Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Fri, 11 Oct 2019 10:45:06 +0800
+Subject: [PATCH] Enable automatic channel selection
+
+---
+ hostapd/hostapd.conf | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/hostapd/hostapd.conf b/hostapd/hostapd.conf
+index 9ec840b..fbd40bf 100644
+--- a/hostapd/hostapd.conf
++++ b/hostapd/hostapd.conf
+@@ -162,7 +162,7 @@ hw_mode=g
+ # If CONFIG_ACS build option is enabled, the channel can be selected
+ # automatically at run time by setting channel=acs_survey or channel=0, both of
+ # which will enable the ACS survey based algorithm.
+-channel=6
++channel=acs_survey
+ 
+ # ACS tuning - Automatic Channel Selection
+ # See: http://wireless.kernel.org/en/users/Documentation/acs
+@@ -188,7 +188,7 @@ channel=6
+ # behavior on 2.4 GHz band if no acs_chan_bias parameter is specified).
+ #
+ # Defaults:
+-#acs_num_scans=5
++acs_num_scans=3
+ #acs_chan_bias=1:0.8 6:0.8 11:0.8
+ 
+ # Channel list restriction. This option allows hostapd to select one of the

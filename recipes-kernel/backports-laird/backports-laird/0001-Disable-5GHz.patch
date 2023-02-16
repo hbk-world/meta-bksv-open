@@ -1,0 +1,22 @@
+From 8ab25b5d1d04525a07945ed03e07e4cadd24042d Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 4 May 2020 14:31:31 +0800
+Subject: [PATCH] Disable 5GHz
+
+---
+ drivers/net/wireless/laird/lrdmwl/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/laird/lrdmwl/main.c b/drivers/net/wireless/laird/lrdmwl/main.c
+index e347582..41f3bc2 100644
+--- a/drivers/net/wireless/laird/lrdmwl/main.c
++++ b/drivers/net/wireless/laird/lrdmwl/main.c
+@@ -1212,7 +1212,7 @@ static int mwl_wl_init(struct mwl_priv *priv)
+ 
+ 	priv->reg.regulatory_set = false;
+ 	priv->disable_2g         = false;
+-	priv->disable_5g         = false;
++	priv->disable_5g         = true;
+ 
+ 	if (!SISO_mode)
+ 		priv->ant_tx_bmp = if_ops->mwl_chip_tbl.antenna_tx;

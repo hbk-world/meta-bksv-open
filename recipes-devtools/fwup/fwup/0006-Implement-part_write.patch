@@ -1,0 +1,155 @@
+From c08a70c691c371df7f8dd9be9d2014483c301039 Mon Sep 17 00:00:00 2001
+From: Carsten Hansen <Carsten.Hansen@bksv.com>
+Date: Mon, 21 Jan 2019 18:11:48 +0800
+Subject: [PATCH] Implement part_write
+
+---
+ README.md       |  1 +
+ src/cfgfile.c   |  3 +-
+ src/functions.c | 96 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 99 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 2d042e6..793d728 100644
+--- a/README.md
++++ b/README.md
+@@ -570,6 +570,7 @@ mmc_setbootpart(partition)              | 0.17.0 | Mark the specified eMMC boot
+ mmc_writebootpart(partition, offset)    | 0.17.0 | Write a resource to the specified eMMC boot partition. The `offset` is specified as a number of 512-byte blocks, and the `partition` number must be 1 or 2. The boot partition will be left write-protected
+ fs_mkvfat(partition, options)           | 0.17.0 | Create a vfat filesystem on the specified `partition`. The `options` parameter is passed to the underlying mkfs.vfat command and may be an empty string. The new partition will be left unmounted
+ fs_writefile(partition, path)           | 0.17.0 | Write a resource to a path on the specified `partition`. The partition will be automatically mounted before extraction, and unmounted afterwards
++part_write(block_offset)                | 0.17.0 | Write the resource as a filesystem image to the specified partition number
+ 
+ ## Sparse files
+ 
+diff --git a/src/cfgfile.c b/src/cfgfile.c
+index e448f88..05f2f8f 100644
+--- a/src/cfgfile.c
++++ b/src/cfgfile.c
+@@ -498,7 +498,8 @@ static cfg_opt_t uboot_environment_opts[] = {
+     CFG_FUNC("mmc_writebootpart", CB), \
+     CFG_FUNC("mmc_setbootpart", CB), \
+     CFG_FUNC("fs_mkvfat", CB), \
+-    CFG_FUNC("fs_writefile", CB)
++    CFG_FUNC("fs_writefile", CB), \
++    CFG_FUNC("part_write", CB)
+ 
+ static cfg_opt_t task_on_init_opts[] = {
+     CFG_ON_EVENT_FUNCTIONS(cb_on_init_func),
+diff --git a/src/functions.c b/src/functions.c
+index 2ffd623..80bbe18 100644
+--- a/src/functions.c
++++ b/src/functions.c
+@@ -68,6 +68,7 @@ DECLARE_FUN(mmc_writebootpart);
+ DECLARE_FUN(mmc_setbootpart);
+ DECLARE_FUN(fs_mkvfat);
+ DECLARE_FUN(fs_writefile);
++DECLARE_FUN(part_write);
+ 
+ struct fun_info {
+     const char *name;
+@@ -107,6 +108,7 @@ static struct fun_info fun_table[] = {
+     FUN_INFO(mmc_setbootpart),
+     FUN_INFO(fs_mkvfat),
+     FUN_INFO(fs_writefile),
++    FUN_INFO(part_write),
+ };
+ 
+ static struct fun_info *lookup(int argc, const char **argv)
+@@ -1453,3 +1455,97 @@ cleanup:
+ 
+     return rc;
+ }
++
++int part_write_validate(struct fun_context *fctx)
++{
++    if (fctx->type != FUN_CONTEXT_FILE)
++        ERR_RETURN("part_write only usable in on-resource");
++
++    if (fctx->argc != 2)
++        ERR_RETURN("part_write requires a partition number");
++
++    int partition = strtol(fctx->argv[1], NULL, 0);
++    if (partition < 1 || partition > 8)
++        ERR_RETURN("part_write requires the partition number to be in the range [1..8]");
++
++    return 0;
++}
++int part_write_compute_progress(struct fun_context *fctx)
++{
++    return process_resource_compute_progress(fctx, false);
++}
++struct part_write_cookie {
++    off_t dest_offset;
++    struct pad_to_block_writer ptbw;
++};
++static int part_write_pwrite_callback(void *cookie, const void *buf, size_t count, off_t offset)
++{
++    struct part_write_cookie *rwc = (struct part_write_cookie *) cookie;
++    return ptbw_pwrite(&rwc->ptbw, buf, count, rwc->dest_offset + offset);
++}
++static int part_write_final_hole_callback(void *cookie, off_t hole_size, off_t file_size)
++{
++    struct part_write_cookie *rwc = (struct part_write_cookie *) cookie;
++
++    // If this is a regular file, seeking is insufficient in making the file
++    // the right length, so write a block of zeros to the end.
++    char zeros[FWUP_BLOCK_SIZE];
++    memset(zeros, 0, sizeof(zeros));
++    off_t to_write = sizeof(zeros);
++    if (hole_size < to_write)
++        to_write = hole_size;
++    off_t offset = file_size - to_write;
++    return ptbw_pwrite(&rwc->ptbw, zeros, to_write, rwc->dest_offset + offset);
++}
++int part_write_run(struct fun_context *fctx)
++{
++    struct part_write_cookie rwc;
++    char sysfs_path[128], buf[32];
++    ssize_t size;
++    int partition;
++    const char *device_name;
++
++    partition = strtoull(fctx->argv[1], NULL, 0);
++    device_name = strrchr(fctx->mmc_device_path, '/') + 1;
++
++    // Look up the starting sector number for the partition in sysfs
++    snprintf(sysfs_path, sizeof(sysfs_path), "/sys/block/%s/%sp%d/start",
++        device_name, device_name, partition);
++
++    int fd = open(sysfs_path, O_RDONLY);
++    if (fd < 0) {
++        ERR_RETURN("open = %d, could not determine starting sector for partition %sp%d",
++            errno, device_name, partition);
++    }
++
++    size = read(fd, buf, sizeof(buf) - 1);
++    close(fd);
++
++    if (size <= 0) {
++        ERR_RETURN("read = %d, could not determine starting sector for partition %sp%d",
++            errno, device_name, partition);
++    } 
++
++    if (buf[size - 1] == '\n') {
++        buf[size - 1] = '\0'; // Remove trailing \n
++    } else {
++        buf[size] = '\0';
++    }
++
++    // Convert string containing starting sector number to integer containing byte offset
++    rwc.dest_offset = strtoull(buf, NULL, 0) * FWUP_BLOCK_SIZE;
++
++    // Path write runs all writes through pad_to_block_writer to guarantee
++    // block size writes to the caching code no matter how the input resources
++    // get decompressed.
++
++    ptbw_init(&rwc.ptbw, fctx->output);
++
++    OK_OR_RETURN(process_resource(fctx,
++                                  false,
++                                  part_write_pwrite_callback,
++                                  part_write_final_hole_callback,
++                                  &rwc));
++
++    return ptbw_flush(&rwc.ptbw);
++}

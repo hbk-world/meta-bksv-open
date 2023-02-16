@@ -1,0 +1,7 @@
+# If you must specify a non-NMEA driver, uncomment and modify the next line
+START_DAEMON="true"
+GPSD_SOCKET="/var/run/gpsd.sock"
+GPS_DEVICES="/dev/gps0 /dev/pps0" 
+GPSD_OPTIONS="-n"
+USBAUTO="false"
+
