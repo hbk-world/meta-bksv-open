@@ -1,3 +1,6 @@
+# $${\color{red}MOVED}$$
+# https://github.com/hbkworld/meta-bksv-open
+
 ![2245 Sound Level Meter](2245.jpg)
 
 # Overview
